@@ -47,6 +47,7 @@ def walk_text(m):
 
 MODS = []
 for f in sorted(glob.glob(os.path.join(ROOT, "modules", "*.json"))):
+    if os.path.basename(f).startswith("_"): continue   # 묶음 파일 제외
     m = json.load(io.open(f, encoding="utf-8"))
     m["_f"] = os.path.basename(f)
     MODS.append(m)
