@@ -187,6 +187,11 @@ function openPrint(title,html){
   w.document.close();
   setTimeout(()=>{ try{w.print();}catch(e){} },400);
 }
+function lbl(t){
+  if(!t) return t;
+  const names={}; (M.mats||[]).forEach(x=>names[x.k]=x.label||x.k);
+  return String(t).replace(/\{\{(\w+)\}\}/g,(mo,k)=>"["+(names[k]||k)+"]");
+}
 function printWorkbook(){
   if(!M) return toast("모듈이 없습니다.");
   const it=M.intro||{}; let h="";
@@ -204,19 +209,19 @@ function printWorkbook(){
   (M.steps||[]).forEach(st=>{
     h+='<div class="step" style="page-break-before:always">';
     h+="<h2>"+esc(st.no+"  "+st.title)+"</h2><hr>";
-    if(st.why) h+='<div class="why">'+esc(st.why)+"</div>";
+    if(st.why) h+='<div class="why">'+esc(lbl(st.why))+"</div>";
     if(st.noai) h+='<div class="box warn"><b>※ 이 스텝에서는 AI를 쓰지 않습니다.</b>내 머리와 내 손으로 합니다.</div>';
     if(st.mats){
       h+="<table><tr><th style='width:30%'>항목</th><th>내가 적을 내용</th></tr>"
         +(M.mats||[]).map(x=>"<tr><td>"+esc(x.label)+"</td><td style='height:0.9cm'></td></tr>").join("")+"</table>";
     }
-    (st.prompts||[]).forEach(p=>{ h+='<div class="box"><b>▶ '+esc(p.label||"")+"</b>"+esc(p.text||"")+"</div>"; });
-    if(st.expect) h+='<div class="box gray"><b>이런 답이 오면 정상입니다</b>'+esc(st.expect)+"</div>";
-    (st.troubles||[]).forEach(t=>{ h+='<div class="box warn"><b>[막혔을 때] '+esc(t.when)+"</b>→ "+esc(t.fix)+"</div>"; });
+    (st.prompts||[]).forEach(p=>{ h+='<div class="box"><b>▶ '+esc(p.label||"")+"</b>"+esc(lbl(p.text||""))+"</div>"; });
+    if(st.expect) h+='<div class="box gray"><b>이런 답이 오면 정상입니다</b>'+esc(lbl(st.expect))+"</div>";
+    (st.troubles||[]).forEach(t=>{ h+='<div class="box warn"><b>[막혔을 때] '+esc(t.when)+"</b>→ "+esc(lbl(t.fix))+"</div>"; });
     if(st.record){
-      h+="<h3>▷ 기록 — "+esc(st.record.label)+'</h3><div class="write'+(st.record.big?" big":"")+'"></div>';
+      h+="<h3>▷ 기록 — "+esc(lbl(st.record.label))+'</h3><div class="write'+(st.record.big?" big":"")+'"></div>';
     }
-    (st.checks||[]).forEach(c=>{ h+='<div class="chk">☐ '+esc(c)+"</div>"; });
+    (st.checks||[]).forEach(c=>{ h+='<div class="chk">☐ '+esc(lbl(c))+"</div>"; });
     h+="</div>";
   });
   h+='<div style="page-break-before:always"></div><h2>AI 사용 기록표</h2><table>'

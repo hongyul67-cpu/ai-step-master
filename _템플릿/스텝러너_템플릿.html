@@ -12,6 +12,12 @@ body{margin:0;font-family:"Apple SD Gothic Neo","Malgun Gothic","맑은 고딕",
 .topbar{position:sticky;top:0;z-index:30;background:var(--paper);border-bottom:1px solid var(--line);padding:9px 14px;margin:-16px -14px 16px;display:flex;align-items:center;gap:7px;}
 .topbar h1{font-size:14.5px;margin:0;flex:1;font-weight:800;letter-spacing:-.3px;}
 .dot{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--brand),#7aa2ff);display:grid;place-items:center;color:#fff;font-weight:900;font-size:13px;flex:0 0 auto;}
+.resume{background:#fff8e6;border:1px solid #f5dfa0;border-radius:12px;padding:11px 13px;margin-bottom:12px;font-size:13.5px;color:#7a5a00;display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
+.resume b{color:#9a6700;}
+.resume .sp{flex:1;}
+.resume button{border:0;border-radius:9px;padding:7px 12px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;}
+.resume .no{background:#e8730c;color:#fff;}
+.resume .ok{background:#eef1f6;color:#1b2330;}
 .savebadge{font-size:11px;color:#9ab;background:#f4f6fa;border-radius:20px;padding:2px 8px;white-space:nowrap;}
 .savebadge.saving{color:var(--brand-d);background:var(--soft);}
 .iconbtn{border:1px solid var(--line);background:#fff;border-radius:9px;padding:5px 8px;font-size:11.5px;cursor:pointer;font-family:inherit;color:var(--sub);white-space:nowrap;}
@@ -80,6 +86,19 @@ label.fl{display:block;font-size:12.5px;font-weight:700;color:var(--sub);margin:
 .stepwarn{font-size:12px;color:var(--warn);text-align:center;margin:0 0 7px;min-height:16px;}
 .toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%) translateY(20px);background:#1b2330;color:#fff;padding:11px 18px;border-radius:10px;font-size:14px;font-weight:600;opacity:0;transition:.25s;z-index:60;pointer-events:none;max-width:90%;text-align:center;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.libgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(max-width:640px){.libgrid{grid-template-columns:1fr;}}
+.libcard{border:1.5px solid var(--line);border-radius:13px;padding:14px;background:#fff;cursor:pointer;text-align:left;font-family:inherit;transition:.14s;}
+.libcard:hover{border-color:#bcd0f0;box-shadow:0 4px 14px rgba(40,60,100,.07);}
+.libcard .lc{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.libcard .code{background:linear-gradient(135deg,var(--brand),#7aa2ff);color:#fff;font-weight:900;font-size:11.5px;padding:3px 9px;border-radius:7px;}
+.libcard h4{margin:0;font-size:15.5px;letter-spacing:-.3px;flex:1;}
+.libcard p{margin:0 0 10px;font-size:12.5px;color:var(--sub);line-height:1.55;}
+.libcard .bar{height:6px;background:#e7ebf2;border-radius:99px;overflow:hidden;}
+.libcard .bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--brand),#7aa2ff);width:0;}
+.libcard .st{font-size:11.5px;color:#9aa4b2;margin-top:5px;display:flex;justify-content:space-between;}
+.libcard .st b{color:var(--ok);}
+.trackhd{font-size:12.5px;font-weight:800;color:var(--brand-d);background:var(--soft);border:1px solid #c8d8f7;border-radius:8px;padding:5px 10px;display:inline-block;margin:16px 0 9px;}
 .flow{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 4px;}
 .flow span{font-size:12px;background:var(--soft);border:1px solid #c8d8f7;border-radius:8px;padding:5px 9px;color:var(--brand-d);font-weight:700;}
 .preview{border:1px dashed #c9d6ec;border-radius:12px;padding:14px;background:#fbfcff;font-size:13.5px;color:#42506a;}
@@ -108,6 +127,7 @@ label.fl{display:block;font-size:12.5px;font-weight:700;color:var(--sub);margin:
     <div class="dot" id="barDot">··</div>
     <h1 id="barTitle">스텝 러너</h1>
     <span class="savebadge" id="saveBadge">자동 저장</span>
+    <button class="iconbtn hidden" id="libBtn" onclick="showLib()" title="다른 모듈 고르기">☰ 모듈</button>
     <button class="iconbtn" onclick="saveWork()" title="지금까지 쓴 내용을 파일로 저장">💾 임시저장</button>
     <button class="iconbtn" onclick="document.getElementById('workFile').click()" title="임시저장 파일 불러오기">📂</button>
     <button class="iconbtn" onclick="resetAll()">처음부터</button>
@@ -125,11 +145,15 @@ label.fl{display:block;font-size:12.5px;font-weight:700;color:var(--sub);margin:
     </div>
   </section>
 
+  <!-- 모듈 고르기 (모음 파일일 때) -->
+  <section id="libScreen" class="hidden"></section>
+
   <!-- 시작 화면 -->
   <section id="startScreen" class="hidden"></section>
 
   <!-- 스텝 화면 -->
   <section id="stepScreen" class="hidden">
+    <div id="resumeBar"></div>
     <div class="progress"><i id="progBar"></i></div>
     <div class="map" id="stepMap"></div>
     <div class="card" id="stepCard"></div>
@@ -169,10 +193,17 @@ label.fl{display:block;font-size:12.5px;font-weight:700;color:var(--sub);margin:
 
 <script>
 /* ===================== 상태 ===================== */
+const CAN_SAVE=(function(){ try{ localStorage.setItem("__t","1"); localStorage.removeItem("__t"); return true; }catch(e){ return false; } })();
 let MOD=null, MATS=[], STEPS=[], TOTAL=0, LSKEY="";
+let LIB=null;   /* 모음 파일일 때 모듈 배열 */
 let S={student:{className:"",studentId:"",studentName:""}, mats:{}, rec:{}, chk:{}, idx:0, started:false};
 
+function keepStudent(){
+  try{ return JSON.parse(localStorage.getItem("stepRunner_student")||"null") || {}; }catch(e){ return {}; }
+}
 function setModule(m){
+  S={student:Object.assign({className:"",studentId:"",studentName:""}, keepStudent()),
+     mats:{}, rec:{}, chk:{}, idx:0, started:false};
   MOD=m; MATS=m.mats||[]; STEPS=m.steps||[]; TOTAL=STEPS.length;
   LSKEY="stepRunner_"+(m.code||"MOD")+"_v1";
   document.title=(m.stage?m.stage+" "+m.code+" · ":"")+m.title;
@@ -181,14 +212,17 @@ function setModule(m){
   document.getElementById("doneTitle").textContent=(m.intro&&m.intro.finishTitle)||"끝까지 만들었습니다";
   document.getElementById("nextNote").textContent=(m.intro&&m.intro.nextNote)||"";
   document.getElementById("pickScreen").classList.add("hidden");
+  document.getElementById("libScreen").classList.add("hidden");
+  document.getElementById("libBtn").classList.toggle("hidden", !LIB);
   renderStart();
   const resumed=load();
-  if(resumed){ document.getElementById("startScreen").classList.add("hidden"); go(S.idx||0); toast("이어서 진행합니다 (자동 저장된 내용)"); }
+  if(resumed){ document.getElementById("startScreen").classList.add("hidden"); go(S.idx||0); showResumeBar(); }
   else document.getElementById("startScreen").classList.remove("hidden");
 }
 function save(){
   try{ localStorage.setItem(LSKEY, JSON.stringify(S)); }catch(e){}
   const b=document.getElementById("saveBadge");
+  if(!CAN_SAVE){ b.textContent="저장 안 됨"; b.style.color="#b3590a"; b.style.background="#fff1e6"; return; }
   b.textContent="저장됨"; b.classList.add("saving");
   clearTimeout(save._t); save._t=setTimeout(()=>{b.textContent="자동 저장";b.classList.remove("saving");},900);
 }
@@ -204,6 +238,15 @@ function resetAll(){
   if(!confirm("지금까지 작성한 내용을 모두 지우고 처음부터 시작할까요?")) return;
   try{ localStorage.removeItem(LSKEY); }catch(e){}
   location.reload();
+}
+
+function showResumeBar(){
+  const el=document.getElementById("resumeBar"); if(!el) return;
+  const who=(S.student.studentName||"").trim();
+  el.innerHTML='<div class="resume"><span><b>'+esc(who||"이전 사용자")+'</b> 학생이 쓰던 기록을 이어서 진행합니다.'
+    +' 내가 아니라면 처음부터 시작하세요.</span><span class="sp"></span>'
+    +'<button class="no" onclick="resetAll()">처음부터</button>'
+    +'<button class="ok" onclick="this.parentNode.parentNode.innerHTML=\'\'">내가 맞아요</button></div>';
 }
 
 /* ===================== 유틸 ===================== */
@@ -266,6 +309,12 @@ function renderStart(){
     h+='<div class="preview"><h4>'+esc(it.outcomeTitle||"")+"</h4><ol>"
       + it.outcomeItems.map(x=>"<li>"+esc(x)+"</li>").join("")+"</ol></div></div>";
   }
+  if(!CAN_SAVE){
+    h+='<div class="card"><div class="rule" style="background:#fff1e6;border-color:#f2cfc9;color:#a5433a">'
+      +'<b>⚠ 이 환경에서는 자동 저장이 되지 않습니다.</b><br>'
+      +'창을 닫거나 새로 고치면 쓴 내용이 사라집니다. 중간중간 위쪽 <b>💾 임시저장</b>으로 파일을 저장해 두세요.<br>'
+      +'(선생님께: 링크로 열면 자동 저장이 됩니다.)</div></div>';
+  }
   if(it.rules&&it.rules.length){
     h+='<div class="card"><h3 class="sub" style="margin-top:0">⚠️ 시작 전 약속</h3><div class="rule">'
       + it.rules.map((r,i)=>"<b>"+["①","②","③","④","⑤"][i]+"</b> "+esc(r)).join("<br>")+"</div></div>";
@@ -293,6 +342,7 @@ function stepDone(i){
 function startRun(){
   ["className","studentId","studentName"].forEach(k=>{ const el=document.getElementById("s_"+k); if(el) S.student[k]=el.value.trim(); });
   if(!S.student.studentName){ toast("이름을 입력해 주세요."); return; }
+  try{ localStorage.setItem("stepRunner_student", JSON.stringify(S.student)); }catch(e){}
   S.started=true; save();
   document.getElementById("startScreen").classList.add("hidden");
   document.getElementById("actionbar").classList.remove("hidden");
@@ -353,7 +403,7 @@ function renderStep(){
   let h="";
   if(pn) h+='<span class="phase p'+st.phase+'">'+esc(pn)+"</span>";
   h+='<div class="steptitle"><span class="no">'+esc(st.no)+"</span> "+esc(st.title)+"</div>";
-  if(st.why) h+='<p class="why'+(st.star?" star":"")+'">'+esc(st.why)+"</p>";
+  if(st.why) h+='<p class="why'+(st.star?" star":"")+'">'+esc(fill(st.why))+"</p>";
   if(st.noai) h+='<div class="noai">🙅 이 스텝에서는 AI를 쓰지 않습니다. 내 머리와 내 손으로 합니다.</div>';
 
   let n=0;
@@ -373,7 +423,7 @@ function renderStep(){
     });
   }
   if(st.expect){
-    h+='<details class="fold"><summary>이런 답이 오면 정상입니다 (예시 보기)</summary><div class="body"><div class="sample">'+esc(st.expect)+"</div></div></details>";
+    h+='<details class="fold"><summary>이런 답이 오면 정상입니다 (예시 보기)</summary><div class="body"><div class="sample">'+esc(fill(st.expect))+"</div></div></details>";
   }
   if(st.troubles&&st.troubles.length){
     h+='<details class="fold"><summary>이렇게 나왔다면? — 막혔을 때 보낼 문장</summary><div class="body">';
@@ -385,15 +435,15 @@ function renderStep(){
   }
   if(st.record){
     h+='<div class="blockhead"><span class="n">'+(++n)+'</span>결과 기록하기</div>';
-    h+='<label class="fl">'+esc(st.record.label)+"</label>";
-    h+='<textarea id="recBox" placeholder="'+esc(st.record.ph||"")+'" style="min-height:'+(st.record.big?"220px":"130px")+'">'+esc(S.rec[st.no]||"")+"</textarea>";
+    h+='<label class="fl">'+esc(fill(st.record.label))+"</label>";
+    h+='<textarea id="recBox" placeholder="'+esc(fill(st.record.ph||""))+'" style="min-height:'+(st.record.big?"220px":"130px")+'">'+esc(S.rec[st.no]||"")+"</textarea>";
     h+='<div class="charcount" id="recCount"></div>';
   }
   if(st.checks&&st.checks.length){
     h+='<div class="blockhead"><span class="n">✔</span>넘어가기 전 확인</div><ul class="checks">';
     st.checks.forEach((c,ci)=>{
       const on=(S.chk[st.no]||[])[ci];
-      h+='<li><label class="'+(on?"on":"")+'"><input type="checkbox" data-chk="'+ci+'"'+(on?" checked":"")+"> <span>"+esc(c)+"</span></label></li>";
+      h+='<li><label class="'+(on?"on":"")+'"><input type="checkbox" data-chk="'+ci+'"'+(on?" checked":"")+"> <span>"+esc(fill(c))+"</span></label></li>";
     });
     h+="</ul>";
   }
@@ -461,6 +511,7 @@ function loadModuleFile(ev){
   r.onload=()=>{
     try{
       const j=JSON.parse(r.result);
+      if(Array.isArray(j) && j.length && j[0].steps){ setLibrary(j); return; }
       if(!j.steps||!j.steps.length) throw 0;
       setModule(j);
     }catch(e){ toast("모듈 파일이 아니거나 손상되었습니다."); }
@@ -501,6 +552,70 @@ function exportSubmission(){
   dl(new Blob([JSON.stringify({__submission:true,form:buildForm(),data:buildData()})],{type:"application/json"}), fname(".과제제출.json"));
 }
 
+/* ===================== 모듈 묶음(모음 파일) ===================== */
+function libProgress(m){
+  let st=null;
+  try{ st=JSON.parse(localStorage.getItem("stepRunner_"+(m.code||"MOD")+"_v1")||"null"); }catch(e){}
+  const total=(m.steps||[]).length;
+  if(!st || !st.started) return {started:false, idx:0, done:0, total:total};
+  let done=0;
+  (m.steps||[]).forEach(s=>{
+    const need=(s.checks||[]).length;
+    const got=(((st.chk||{})[s.no])||[]).filter(Boolean).length;
+    const recOk=s.record ? (((st.rec||{})[s.no]||"").trim().length>0) : true;
+    const matOk=s.mats ? (m.mats||[]).every(x=>((st.mats||{})[x.k]||"").trim()) : true;
+    if(got>=need && recOk && matOk) done++;
+  });
+  return {started:true, idx:st.idx||0, done:done, total:total};
+}
+function setLibrary(arr){
+  LIB=arr;
+  document.getElementById("pickScreen").classList.add("hidden");
+  showLib();
+}
+function showLib(){
+  document.getElementById("startScreen").classList.add("hidden");
+  document.getElementById("stepScreen").classList.add("hidden");
+  document.getElementById("doneScreen").classList.add("hidden");
+  document.getElementById("actionbar").classList.add("hidden");
+  document.getElementById("libScreen").classList.remove("hidden");
+  document.getElementById("barDot").textContent="≡";
+  document.getElementById("barTitle").textContent="단계별 AI 수업 — 모듈 고르기";
+  document.title="단계별 AI 수업 — 모듈 모음";
+  renderLib();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function renderLib(){
+  const tracks=[["A","A트랙 · 문서와 글쓰기"],["B","B트랙 · 발표"],["C","C트랙"],["D","D트랙"]];
+  let h='<div class="card"><h2 class="sec">어떤 모듈을 할까요?</h2>'
+      +'<p class="muted">이 파일 하나에 모든 모듈이 들어 있습니다. 고른 모듈부터 시작하면 되고, '
+      +'하던 것이 있으면 이어서 진행됩니다.</p></div>';
+  const used=[];
+  tracks.forEach(t=>{
+    const g=LIB.filter(m=>String(m.code||"").startsWith(t[0]));
+    if(!g.length) return;
+    g.forEach(m=>used.push(m));
+    h+='<div class="trackhd">'+esc(t[1])+'</div><div class="libgrid">'+g.map(cardHTML).join("")+"</div>";
+  });
+  const rest=LIB.filter(m=>used.indexOf(m)<0);
+  if(rest.length) h+='<div class="trackhd">그 밖의 모듈</div><div class="libgrid">'+rest.map(cardHTML).join("")+"</div>";
+  document.getElementById("libScreen").innerHTML=h;
+  document.getElementById("libScreen").querySelectorAll("[data-pick]").forEach(b=>{
+    b.addEventListener("click",()=>setModule(LIB[+b.dataset.pick]));
+  });
+  function cardHTML(m){
+    const i=LIB.indexOf(m), p=libProgress(m);
+    const pct=p.total? Math.round(p.done/p.total*100) : 0;
+    const state=p.started ? ("이어하기 · S"+(p.idx+1)+"부터") : "시작하기";
+    return '<button class="libcard" data-pick="'+i+'">'
+      +'<div class="lc"><span class="code">'+esc(m.code||"")+'</span><h4>'+esc(m.title||"")+"</h4></div>"
+      +"<p>"+esc(m.desc||"")+"</p>"
+      +'<div class="bar"><i style="width:'+pct+'%"></i></div>'
+      +'<div class="st"><span>'+esc(state)+"</span><span>"
+      +(p.done? "<b>완료 "+p.done+"/"+p.total+"</b>" : "완료 0/"+p.total)+"</span></div></button>";
+  }
+}
+
 /* ===================== 부팅 ===================== */
 (function init(){
   let m=null;
@@ -508,6 +623,7 @@ function exportSubmission(){
     const raw=document.getElementById("moduleData").textContent.trim();
     if(raw && raw!=="null") m=JSON.parse(raw);
   }catch(e){}
+  if(Array.isArray(m)){ setLibrary(m); return; }
   if(m){ setModule(m); return; }
   const q=new URLSearchParams(location.search).get("m");
   if(q){
