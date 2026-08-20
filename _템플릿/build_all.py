@@ -290,7 +290,22 @@ def build_editor(tpl):
     return p
 
 # ---------------- 허브 ----------------
+TRACKS = [("A", "A트랙 · 문서와 글쓰기"), ("B", "B트랙 · 발표")]
+
 def build_index(mods):
+    cards = ""
+    for letter, label in TRACKS:
+        group = [m for m in mods if m["code"].startswith(letter)]
+        if not group:
+            continue
+        cards += '\n    <h3 class="track">%s</h3>' % label
+        cards += _cards(group)
+    rest = [m for m in mods if not any(m["code"].startswith(l) for l, _ in TRACKS)]
+    if rest:
+        cards += '\n    <h3 class="track">그 밖의 모듈</h3>' + _cards(rest)
+    return _write_index(cards)
+
+def _cards(mods):
     cards = ""
     for m in mods:
         base = m["code"] + "_" + m["title"].replace(" ", "")
@@ -306,6 +321,9 @@ def build_index(mods):
       </div>
     </div>""" % (m["code"], m["title"], m.get("desc", ""), base, m["code"], m["code"],
                  os.path.splitext(os.path.basename(m["__file"]))[0])
+    return cards
+
+def _write_index(cards):
     html = """<!DOCTYPE html>
 <html lang="ko"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -324,6 +342,7 @@ p.lead{color:var(--sub);margin:0 0 22px;font-size:14px;}
 .stage span{font-size:12.5px;color:var(--sub);}
 .stage.on{border-color:#b9cdf5;background:var(--soft);}
 h2{font-size:16px;margin:26px 0 10px;letter-spacing:-.3px;}
+.track{font-size:13px;font-weight:800;color:var(--brand-d);background:var(--soft);border:1px solid #c8d8f7;border-radius:8px;padding:6px 11px;display:inline-block;margin:18px 0 10px;}
 .mod{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:12px;}
 .mhead{display:flex;align-items:center;gap:9px;}
 .mhead .code{background:linear-gradient(135deg,var(--brand),#7aa2ff);color:#fff;font-weight:900;font-size:12px;padding:3px 9px;border-radius:7px;}
