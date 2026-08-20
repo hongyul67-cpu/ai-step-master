@@ -186,6 +186,15 @@ label.fl{display:block;font-size:12.5px;font-weight:700;color:var(--sub);margin:
 .libcard .st{font-size:11.5px;color:#9aa4b2;margin-top:5px;display:flex;justify-content:space-between;}
 .libcard .st b{color:var(--ok);}
 .trackhd{font-size:12.5px;font-weight:800;color:var(--brand-d);background:var(--soft);border:1px solid #c8d8f7;border-radius:8px;padding:5px 10px;display:inline-block;margin:16px 0 9px;}
+.modepick{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px;}
+@media(max-width:520px){.modepick{grid-template-columns:1fr;}}
+.modebtn{border:2px solid var(--line);border-radius:12px;padding:13px;background:#fff;cursor:pointer;text-align:left;font-family:inherit;}
+.modebtn:hover{border-color:#bcd0f0;}
+.modebtn.on{border-color:var(--brand);background:var(--soft);}
+.modebtn b{display:block;font-size:14.5px;margin-bottom:3px;color:var(--ink);}
+.modebtn.on b{color:var(--brand-d);}
+.modebtn span{font-size:12.5px;color:var(--sub);line-height:1.5;}
+.modetag{font-size:11px;font-weight:800;padding:3px 9px;border-radius:20px;background:#fff1e6;color:#b3590a;white-space:nowrap;}
 .flow{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 4px;}
 .flow span{font-size:12px;background:var(--soft);border:1px solid #c8d8f7;border-radius:8px;padding:5px 9px;color:var(--brand-d);font-weight:700;}
 .preview{border:1px dashed #c9d6ec;border-radius:12px;padding:14px;background:#fbfcff;font-size:13.5px;color:#42506a;}
@@ -221,6 +230,7 @@ label.fl{display:block;font-size:12.5px;font-weight:700;color:var(--sub);margin:
   <div class="topbar">
     <div class="dot" id="barDot">··</div>
     <h1 id="barTitle">스텝 러너</h1>
+    <span class="modetag hidden" id="modeTag">짧은 코스</span>
     <span class="savebadge" id="saveBadge">자동 저장</span>
     <button class="iconbtn hidden" id="libBtn" onclick="showLib()" title="다른 모듈 고르기">☰ 모듈</button>
     <button class="iconbtn" onclick="saveWork()" title="지금까지 쓴 내용을 파일로 저장">💾 임시저장</button>
@@ -290,20 +300,23 @@ label.fl{display:block;font-size:12.5px;font-weight:700;color:var(--sub);margin:
 /* ===================== 상태 ===================== */
 const CAN_SAVE=(function(){ try{ localStorage.setItem("__t","1"); localStorage.removeItem("__t"); return true; }catch(e){ return false; } })();
 let MOD=null, MATS=[], STEPS=[], TOTAL=0, LSKEY="";
+let ALLSTEPS=[];   /* 원본 14스텝 */
 let LIB=null;   /* 모음 파일일 때 모듈 배열 */
-let S={student:{className:"",studentId:"",studentName:""}, mats:{}, rec:{}, chk:{}, idx:0, started:false};
+let S={student:{className:"",studentId:"",studentName:""}, mats:{}, rec:{}, chk:{}, idx:0, started:false, mode:"full"};
 
 function keepStudent(){
   try{ return JSON.parse(localStorage.getItem("stepRunner_student")||"null") || {}; }catch(e){ return {}; }
 }
 function setModule(m){
   S={student:Object.assign({className:"",studentId:"",studentName:""}, keepStudent()),
-     mats:{}, rec:{}, chk:{}, idx:0, started:false};
-  MOD=m; MATS=m.mats||[]; STEPS=m.steps||[]; TOTAL=STEPS.length;
+     mats:{}, rec:{}, chk:{}, idx:0, started:false, mode:"full"};
+  MOD=m; MATS=m.mats||[]; ALLSTEPS=m.steps||[];
+  applyMode();
   LSKEY="stepRunner_"+(m.code||"MOD")+"_v1";
-  document.title=(m.stage?m.stage+" "+m.code+" · ":"")+m.title;
+  const headTxt=(m.stage? (m.code&&m.code!=="0" ? m.stage+" "+m.code+" · " : m.stage+" · ") : "")+m.title;
+  document.title=headTxt;
   document.getElementById("barDot").textContent=m.code||"··";
-  document.getElementById("barTitle").textContent=(m.stage?m.stage+" "+m.code+" · ":"")+m.title;
+  document.getElementById("barTitle").textContent=headTxt;
   document.getElementById("doneTitle").textContent=(m.intro&&m.intro.finishTitle)||"끝까지 만들었습니다";
   document.getElementById("nextNote").textContent=(m.intro&&m.intro.nextNote)||"";
   document.getElementById("pickScreen").classList.add("hidden");
@@ -311,6 +324,7 @@ function setModule(m){
   document.getElementById("libBtn").classList.toggle("hidden", !LIB);
   renderStart();
   const resumed=load();
+  if(resumed) applyMode();
   if(resumed){ document.getElementById("startScreen").classList.add("hidden"); go(S.idx||0); showResumeBar(); }
   else document.getElementById("startScreen").classList.remove("hidden");
 }
@@ -342,6 +356,26 @@ function showResumeBar(){
     +' 내가 아니라면 처음부터 시작하세요.</span><span class="sp"></span>'
     +'<button class="no" onclick="resetAll()">처음부터</button>'
     +'<button class="ok" onclick="this.parentNode.parentNode.innerHTML=\'\'">내가 맞아요</button></div>';
+}
+
+function applyMode(){
+  const sh=MOD&&MOD.short;
+  if(S.mode==="short" && sh && sh.steps && sh.steps.length){
+    const ov=sh.override||{};
+    STEPS=sh.steps.map(no=>{
+      const base=ALLSTEPS.find(x=>x.no===no);
+      return base ? Object.assign({}, base, ov[no]||{}) : null;
+    }).filter(Boolean);
+  } else {
+    STEPS=ALLSTEPS.slice();
+  }
+  TOTAL=STEPS.length;
+  const tag=document.getElementById("modeTag");
+  if(tag) tag.classList.toggle("hidden", S.mode!=="short");
+}
+function setMode(mode){
+  S.mode=mode; applyMode(); save();
+  document.querySelectorAll("[data-mode]").forEach(b=>b.classList.toggle("on", b.dataset.mode===mode));
 }
 
 /* ===================== 유틸 ===================== */
@@ -392,7 +426,7 @@ function renderStart(){
   const it=MOD.intro||{};
   let h="";
   h+='<div class="card">';
-  h+='<span class="phase">'+esc((MOD.stage||"")+" · 모듈 "+(MOD.code||""))+"</span>";
+  h+='<span class="phase">'+esc((MOD.stage||"")+(MOD.code&&MOD.code!=="0"?" · 모듈 "+MOD.code:""))+"</span>";
   h+='<h2 class="sec">'+esc(MOD.title||"")+"</h2>";
   h+='<p class="muted">'+esc(it.lead||MOD.desc||"")+"</p>";
   if(it.phases&&it.phases.length){
@@ -414,6 +448,14 @@ function renderStart(){
     h+='<div class="card"><h3 class="sub" style="margin-top:0">⚠️ 시작 전 약속</h3><div class="rule">'
       + it.rules.map((r,i)=>"<b>"+["①","②","③","④","⑤"][i]+"</b> "+esc(r)).join("<br>")+"</div></div>";
   }
+  if(MOD.short&&MOD.short.steps&&MOD.short.steps.length){
+    h+='<div class="card"><h3 class="sub" style="margin-top:0">⏱️ 오늘 얼마나 할까요?</h3><div class="modepick">'
+      +'<button class="modebtn'+(S.mode==="short"?" on":"")+'" data-mode="short"><b>짧게 · 1차시</b>'
+      +'<span>'+MOD.short.steps.length+'스텝만 합니다. 결과물까지 나오고, 뼈대 고치기·부분 수정·짝 비교는 건너뜁니다.</span></button>'
+      +'<button class="modebtn'+(S.mode!=="short"?" on":"")+'" data-mode="full"><b>전체 · 3차시</b>'
+      +'<span>'+ALLSTEPS.length+'스텝을 모두 합니다. 고치는 연습과 상대 입장에서 점검까지 들어갑니다.</span></button>'
+      +'</div></div>';
+  }
   h+='<div class="card"><h3 class="sub" style="margin-top:0">✍️ 내 정보</h3><div class="info-grid">'
     +'<div class="field"><label class="fl">학반</label><input type="text" id="s_className" placeholder="예: 2학년 3반"></div>'
     +'<div class="field"><label class="fl">번호</label><input type="text" id="s_studentId" placeholder="예: 12"></div>'
@@ -422,6 +464,9 @@ function renderStart(){
   document.getElementById("startScreen").innerHTML=h;
   ["className","studentId","studentName"].forEach(k=>{
     const el=document.getElementById("s_"+k); if(el) el.value=S.student[k]||"";
+  });
+  document.querySelectorAll("[data-mode]").forEach(b=>{
+    b.addEventListener("click",()=>setMode(b.dataset.mode));
   });
 }
 
@@ -622,7 +667,7 @@ function buildForm(){
   tasks.push({id:"qchk",title:"확인 목록 점검 결과",guide:"각 스텝의 확인 목록 체크 현황입니다.",allowText:true,allowImage:false,allowLink:false});
   return {
     formatVersion:"1.0",
-    assignmentTitle:(MOD.stage?MOD.stage+" "+MOD.code+" · ":"")+MOD.title,
+    assignmentTitle:(MOD.stage?(MOD.code&&MOD.code!=="0"?MOD.stage+" "+MOD.code+" · ":MOD.stage+" · "):"")+MOD.title+(S.mode==="short"?" (짧은 코스)":""),
     subject:MOD.subject||"", teacher:MOD.teacher||"", description:MOD.desc||"",
     studentFields:[
       {key:"className",label:"학반",placeholder:"예: 2학년 3반"},
@@ -681,7 +726,7 @@ function showLib(){
   window.scrollTo({top:0,behavior:"smooth"});
 }
 function renderLib(){
-  const tracks=[["A","A트랙 · 문서와 글쓰기"],["B","B트랙 · 발표"],["C","C트랙"],["D","D트랙"]];
+  const tracks=[["0","1단계 · 시작 전 약속 (10분)"],["A","A트랙 · 문서와 글쓰기"],["B","B트랙 · 발표"],["C","C트랙"],["D","D트랙"]];
   let h='<div class="card"><h2 class="sec">어떤 모듈을 할까요?</h2>'
       +'<p class="muted">이 파일 하나에 모든 모듈이 들어 있습니다. 고른 모듈부터 시작하면 되고, '
       +'하던 것이 있으면 이어서 진행됩니다.</p></div>';

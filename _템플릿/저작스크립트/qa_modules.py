@@ -65,18 +65,20 @@ for m in MODS:
     got = [s["no"] for s in st]
     if got != want: add(c, "높음", "스텝 번호가 S1~S%d 순서가 아님: %s" % (len(st), got))
 
+    FULL = len(st) >= 10   # 14스텝 정규 모듈에만 적용하는 규칙들
+
     # 2) 뼈대 규칙
     if not any(s.get("star") for s in st): add(c, "높음", "★ 강조 스텝이 없음")
-    if not any(s.get("noai") for s in st): add(c, "높음", "‘AI 없이’ 스텝이 없음")
+    if FULL and not any(s.get("noai") for s in st): add(c, "높음", "‘AI 없이’ 스텝이 없음")
     s3 = st[2] if len(st) > 2 else {}
-    if not s3.get("star"): add(c, "보통", "S3이 ★가 아님 (모듈 간 리듬이 흔들림)")
+    if FULL and not s3.get("star"): add(c, "보통", "S3이 ★가 아님 (모듈 간 리듬이 흔들림)")
     s12 = st[11] if len(st) > 11 else {}
-    if not s12.get("noai"): add(c, "보통", "S12가 ‘AI 없이’가 아님")
-    if st[0].get("mats") is not True: add(c, "높음", "S1에 재료 카드가 없음")
+    if FULL and not s12.get("noai"): add(c, "보통", "S12가 ‘AI 없이’가 아님")
+    if FULL and st[0].get("mats") is not True: add(c, "높음", "S1에 재료 카드가 없음")
 
     # 3) 규칙 3원칙
     rules = " ".join(m["intro"].get("rules", []))
-    if "기록표" not in rules: add(c, "보통", "시작 전 약속에 ‘사용 기록’ 항목이 없음")
+    if FULL and "기록표" not in rules: add(c, "보통", "시작 전 약속에 ‘사용 기록’ 항목이 없음")
     if not re.search(r"이름|연락처|개인정보|실명", rules): add(c, "보통", "시작 전 약속에 개인정보 항목이 없음")
 
     # 4) 평가 5요소 · 채점표
@@ -120,7 +122,7 @@ for m in MODS:
 
     # 9) 기록 칸 없는 스텝
     norec = [s["no"] for s in st if not s.get("record")]
-    if len(norec) > 1: add(c, "보통", "기록 칸 없는 스텝이 둘 이상: %s" % ",".join(norec))
+    if FULL and len(norec) > 1: add(c, "보통", "기록 칸 없는 스텝이 둘 이상: %s" % ",".join(norec))
 
     # 10) 1단계 자료 의존
     if "1단계" in " ".join([s.get("why", "") for s in st]) + rules:

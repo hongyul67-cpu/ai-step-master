@@ -318,13 +318,15 @@ def build_admin(mods, path):
 
     para(doc, "이 수업의 전체 흐름", size=13, bold=True, sb=6, sa=3)
     table(doc, [["단계", "내용", "자료"],
-                ["1단계", "AI 윤리 — 넣지 말 것 · 믿지 말 것 · 숨기지 말 것", "미제작"],
+                ["1단계", "AI 윤리 — 넣지 말 것 · 믿지 말 것 · 숨기지 말 것", "모듈 0 (10분)"],
                 ["2단계", "다양한 AI 맛보기 + RCIF 프롬프트", "미제작"],
-                ["3단계", "공통 과제 모듈 — 같이 한 스텝씩", "모듈 %d개 (아래)" % len(mods)],
+                ["3단계", "공통 과제 모듈 — 같이 한 스텝씩", "모듈 %d개 (아래)" % len([x for x in mods if x["code"]!="0"])],
                 ["4단계", "각자 주제로 다시 해 보기", "미제작"]],
           [2.0, 10.5, 4.5], size=10)
 
     para(doc, "모듈 목록", size=13, bold=True, sb=10, sa=3)
+    para(doc, "3단계 모듈은 시작 화면에서 ‘짧게 · 1차시(8스텝)’와 ‘전체 · 3차시(14스텝)’ 중 하나를 고를 수 있습니다.",
+         size=9.5, color="5B6675", sa=4)
     rows = [["코드", "모듈", "차시", "산출물"]]
     for m in mods:
         rows.append([m["code"], m["title"], ov(m, "차시"), ov(m, "산출물")])
@@ -404,7 +406,8 @@ def build_editor(tpl):
     return p
 
 # ---------------- 허브 ----------------
-TRACKS = [("A", "A트랙 · 문서와 글쓰기"), ("B", "B트랙 · 발표")]
+TRACKS = [("0", "1단계 · 시작 전 약속 (10분)"),
+          ("A", "A트랙 · 문서와 글쓰기"), ("B", "B트랙 · 발표")]
 
 def build_index(mods):
     cards = ""
@@ -483,7 +486,7 @@ h2{font-size:16px;margin:26px 0 10px;letter-spacing:-.3px;}
   <div class="stage"><b>4단계</b><span>각자 주제로 다시 해 보기</span></div>
 </div>
 
-<h2>3단계 모듈</h2>%s
+<h2>모듈</h2>%s
 
 <h2>모아 보기 · 관리</h2>
 <div class="tool">
