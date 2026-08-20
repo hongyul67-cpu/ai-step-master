@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>단계별 AI 수업</title>
+<style>
+:root{--ink:#1b2330;--sub:#5b6675;--line:#e2e6ec;--bg:#f4f6fa;--brand:#2f6df0;--brand-d:#1f53c4;--paper:#fff;--soft:#eef3ff;}
+*{box-sizing:border-box;}
+body{margin:0;font-family:"Apple SD Gothic Neo","Malgun Gothic","맑은 고딕",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;}
+.wrap{max-width:860px;margin:0 auto;padding:34px 18px 60px;}
+h1{font-size:25px;margin:0 0 6px;letter-spacing:-.5px;}
+p.lead{color:var(--sub);margin:0 0 22px;font-size:14px;}
+.stages{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:26px;}
+@media(max-width:640px){.stages{grid-template-columns:1fr 1fr;}}
+.stage{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px 13px;}
+.stage b{display:block;font-size:12px;color:var(--brand-d);margin-bottom:3px;}
+.stage span{font-size:12.5px;color:var(--sub);}
+.stage.on{border-color:#b9cdf5;background:var(--soft);}
+h2{font-size:16px;margin:26px 0 10px;letter-spacing:-.3px;}
+.mod{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:12px;}
+.mhead{display:flex;align-items:center;gap:9px;}
+.mhead .code{background:linear-gradient(135deg,var(--brand),#7aa2ff);color:#fff;font-weight:900;font-size:12px;padding:3px 9px;border-radius:7px;}
+.mhead h3{font-size:17px;margin:0;letter-spacing:-.3px;}
+.mdesc{font-size:13.5px;color:var(--sub);margin:7px 0 12px;}
+.links{display:flex;flex-wrap:wrap;gap:7px;}
+.links a{font-size:12.5px;text-decoration:none;color:var(--sub);border:1px solid var(--line);background:#fbfcfe;border-radius:9px;padding:7px 11px;}
+.links a:hover{background:#f2f5fa;}
+.links a.go{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:700;}
+.tool{display:flex;gap:12px;flex-wrap:wrap;}
+.tool a{flex:1 1 220px;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px 16px;text-decoration:none;color:var(--ink);}
+.tool a:hover{box-shadow:0 4px 14px rgba(40,60,100,.08);}
+.tool b{display:block;font-size:14.5px;margin-bottom:3px;}
+.tool span{font-size:12.5px;color:var(--sub);}
+.note{font-size:12.5px;color:var(--sub);background:#fff8e6;border:1px solid #f5dfa0;border-radius:11px;padding:11px 13px;margin-top:22px;}
+</style></head><body><div class="wrap">
+<h1>단계별 AI 수업</h1>
+<p class="lead">AI를 처음 쓰는 학생이 한 스텝씩 따라가며 익히는 수업 자료입니다.</p>
+
+<div class="stages">
+  <div class="stage"><b>1단계</b><span>AI 윤리 — 넣지 말 것·믿지 말 것·숨기지 말 것</span></div>
+  <div class="stage"><b>2단계</b><span>다양한 AI 맛보기 + RCIF 프롬프트</span></div>
+  <div class="stage on"><b>3단계</b><span>공통 과제 모듈 — 같이 한 스텝씩</span></div>
+  <div class="stage"><b>4단계</b><span>각자 주제로 다시 해 보기</span></div>
+</div>
+
+<h2>3단계 모듈</h2>
+    <div class="mod">
+      <div class="mhead"><span class="code">A1</span><h3>회의록 정리하기</h3></div>
+      <p class="mdesc">난잡한 회의 메모를 읽을 수 있는 회의록으로 바꾸고, AI가 지어낸 내용이 없는지 원문과 대조합니다.</p>
+      <div class="links">
+        <a class="go" href="A1_회의록정리하기.html">▶ 학생용 열기</a>
+        <a href="워드/A1_학생용_워크북.docx">📄 워크북</a>
+        <a href="워드/A1_교사용_운영가이드.docx">📗 교사 가이드</a>
+        <a href="modules/3단계-A1_회의록정리.json">{ } 모듈 원본</a>
+      </div>
+    </div>
+    <div class="mod">
+      <div class="mhead"><span class="code">A2</span><h3>선생님께 메일 쓰기</h3></div>
+      <p class="mdesc">질문·부탁·양해 요청 중 하나를 골라, 선생님이 바로 답장할 수 있는 짧고 분명한 메일 한 통을 완성합니다.</p>
+      <div class="links">
+        <a class="go" href="A2_선생님께메일쓰기.html">▶ 학생용 열기</a>
+        <a href="워드/A2_학생용_워크북.docx">📄 워크북</a>
+        <a href="워드/A2_교사용_운영가이드.docx">📗 교사 가이드</a>
+        <a href="modules/3단계-A2_선생님께메일.json">{ } 모듈 원본</a>
+      </div>
+    </div>
+    <div class="mod">
+      <div class="mhead"><span class="code">A3</span><h3>학교에 건의하기</h3></div>
+      <p class="mdesc">불편한 점을 불평이 아닌 제안으로 바꾸고, 근거는 AI가 아니라 내가 직접 조사해 채웁니다.</p>
+      <div class="links">
+        <a class="go" href="A3_학교에건의하기.html">▶ 학생용 열기</a>
+        <a href="워드/A3_학생용_워크북.docx">📄 워크북</a>
+        <a href="워드/A3_교사용_운영가이드.docx">📗 교사 가이드</a>
+        <a href="modules/3단계-A3_학교에건의하기.json">{ } 모듈 원본</a>
+      </div>
+    </div>
+    <div class="mod">
+      <div class="mhead"><span class="code">A4</span><h3>체험학습 보고서 쓰기</h3></div>
+      <p class="mdesc">AI에게 ‘너는 그날 그곳에 가지 않았다’고 못 박고 시작해, 내가 직접 본 것만으로 보고서를 채웁니다.</p>
+      <div class="links">
+        <a class="go" href="A4_체험학습보고서쓰기.html">▶ 학생용 열기</a>
+        <a href="워드/A4_학생용_워크북.docx">📄 워크북</a>
+        <a href="워드/A4_교사용_운영가이드.docx">📗 교사 가이드</a>
+        <a href="modules/3단계-A4_체험학습보고서.json">{ } 모듈 원본</a>
+      </div>
+    </div>
+    <div class="mod">
+      <div class="mhead"><span class="code">A5</span><h3>근로계약서 읽고 질문 뽑기</h3></div>
+      <p class="mdesc">알바 계약서를 AI와 함께 항목별로 점검하고, AI가 말한 기준은 공식 자료로 직접 확인한 뒤, 사장님께 물어볼 질문 10개를 만듭니다.</p>
+      <div class="links">
+        <a class="go" href="A5_근로계약서읽고질문뽑기.html">▶ 학생용 열기</a>
+        <a href="워드/A5_학생용_워크북.docx">📄 워크북</a>
+        <a href="워드/A5_교사용_운영가이드.docx">📗 교사 가이드</a>
+        <a href="modules/3단계-A5_근로계약서읽기.json">{ } 모듈 원본</a>
+      </div>
+    </div>
+
+<h2>교사용 도구</h2>
+<div class="tool">
+  <a href="모듈편집기.html"><b>🛠 모듈 편집기</b><span>프롬프트·스텝·체크리스트를 화면에서 고치고, 학생 배포용 파일을 만듭니다.</span></a>
+  <a href="https://hongyul67-cpu.github.io/ai-task-tools/과제채점_도구_교사용.html" target="_blank" rel="noopener"><b>✅ 과제 채점·피드백 도구</b><span>학생이 낸 .json을 열어 채점하고 피드백 PDF를 만듭니다.</span></a>
+</div>
+
+<div class="note"><b>학생에게 나눠 줄 것</b> — 각 모듈의 <b>‘학생용 열기’ 파일 하나</b>면 됩니다.
+그 파일 하나에 모든 내용이 들어 있어 인터넷 없이도 열립니다.</div>
+</div></body></html>

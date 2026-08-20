@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>모듈 편집기 — 단계별 AI 수업</title>
+<style>
+:root{--ink:#1b2330;--sub:#5b6675;--line:#e2e6ec;--bg:#f4f6fa;--brand:#2f6df0;--brand-d:#1f53c4;--warn:#e8730c;--ok:#1f9d57;--paper:#fff;--soft:#eef3ff;--danger:#d6483b;}
+*{box-sizing:border-box;}
+body{margin:0;font-family:"Apple SD Gothic Neo","Malgun Gothic","맑은 고딕",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55;font-size:14px;}
+.top{position:sticky;top:0;z-index:30;background:var(--paper);border-bottom:1px solid var(--line);padding:9px 14px;display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+.top .dot{width:29px;height:29px;border-radius:8px;background:linear-gradient(135deg,var(--brand),#7aa2ff);display:grid;place-items:center;color:#fff;font-weight:900;font-size:13px;}
+.top h1{font-size:14.5px;margin:0;font-weight:800;letter-spacing:-.3px;}
+.top .fname{font-size:12px;color:var(--sub);background:#f4f6fa;border-radius:20px;padding:3px 10px;}
+.top .sp{flex:1;}
+button{font-family:inherit;cursor:pointer;}
+.b{border:1px solid var(--line);background:#fff;border-radius:9px;padding:7px 11px;font-size:12.5px;color:var(--ink);}
+.b:hover{background:#f6f8fc;}
+.b.pri{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:700;}
+.b.ok{background:var(--ok);border-color:var(--ok);color:#fff;font-weight:700;}
+.b.warn{background:#fff;border-color:#f2cfc9;color:var(--danger);}
+.tabs{display:flex;gap:5px;padding:10px 14px 0;background:var(--paper);border-bottom:1px solid var(--line);flex-wrap:wrap;}
+.tabs button{border:0;background:none;padding:9px 13px;font-size:13.5px;font-weight:700;color:var(--sub);border-bottom:2.5px solid transparent;}
+.tabs button.on{color:var(--brand-d);border-bottom-color:var(--brand);}
+.page{max-width:1100px;margin:0 auto;padding:16px 14px 80px;}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:13px;padding:16px;margin-bottom:12px;}
+.card h3{margin:0 0 10px;font-size:14.5px;letter-spacing:-.2px;}
+label.fl{display:block;font-size:12px;font-weight:700;color:var(--sub);margin:10px 0 4px;}
+input[type=text],textarea,select{width:100%;border:1.5px solid var(--line);border-radius:9px;padding:9px 11px;font-size:13.5px;font-family:inherit;color:var(--ink);background:#fcfdff;}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--brand);}
+textarea{resize:vertical;min-height:70px;line-height:1.6;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+@media(max-width:760px){.grid2,.grid3{grid-template-columns:1fr;}}
+.hint{font-size:11.5px;color:#9aa4b2;margin-top:3px;}
+.split{display:grid;grid-template-columns:250px 1fr;gap:14px;align-items:start;}
+@media(max-width:860px){.split{grid-template-columns:1fr;}}
+.steplist{background:var(--paper);border:1px solid var(--line);border-radius:13px;padding:10px;position:sticky;top:104px;max-height:calc(100vh - 130px);overflow:auto;}
+.steplist .it{display:flex;align-items:center;gap:6px;padding:7px 8px;border-radius:9px;cursor:pointer;font-size:12.5px;}
+.steplist .it:hover{background:#f5f8fd;}
+.steplist .it.on{background:var(--soft);color:var(--brand-d);font-weight:700;}
+.steplist .it .n{font-weight:800;font-size:11.5px;color:var(--sub);min-width:26px;}
+.steplist .it.on .n{color:var(--brand-d);}
+.steplist .ph{font-size:11px;font-weight:800;color:#9aa4b2;margin:9px 4px 3px;}
+.rowbtns{display:flex;gap:5px;margin-top:9px;flex-wrap:wrap;}
+.rowbtns .b{padding:6px 9px;font-size:11.5px;}
+.item{border:1px solid var(--line);border-radius:11px;padding:11px;margin-bottom:9px;background:#fbfcfe;}
+.item .ihead{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+.item .ihead b{font-size:12px;color:var(--sub);flex:1;}
+.item .x{border:0;background:#f4e7e5;color:var(--danger);border-radius:7px;padding:3px 8px;font-size:11.5px;}
+.chkline{display:flex;gap:6px;margin-bottom:6px;}
+.chkline input{flex:1;}
+.chkline button{border:0;background:#f4e7e5;color:var(--danger);border-radius:7px;padding:0 9px;font-size:12px;}
+.flag{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;margin-right:14px;color:var(--sub);}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:#1b2330;color:#fff;padding:11px 18px;border-radius:10px;font-size:13.5px;font-weight:600;opacity:0;transition:.25s;z-index:60;pointer-events:none;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.tblhint{font-size:11.5px;color:#9aa4b2;margin:2px 0 4px;}
+.tblhint b{color:var(--brand-d);}
+.help{background:#fff8e6;border:1px solid #f5dfa0;border-radius:11px;padding:11px 13px;font-size:12.5px;color:#7a5a00;margin-bottom:12px;}
+.help b{color:#9a6700;}
+.empty{text-align:center;color:#9aa4b2;padding:40px 10px;font-size:13.5px;}
+@media(max-width:860px){.steplist{position:static;max-height:none;overflow:visible;}}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="dot">⚙</div>
+  <h1>모듈 편집기</h1>
+  <span class="fname" id="fname">모듈 없음</span>
+  <span class="sp"></span>
+  <button class="b" onclick="newModule()">＋ 새 모듈</button>
+  <button class="b" onclick="document.getElementById('f').click()">📂 열기</button>
+  <input type="file" id="f" accept=".json" style="display:none" onchange="openFile(event)">
+  <button class="b pri" onclick="saveModule()">💾 모듈 저장</button>
+  <button class="b ok" onclick="exportHTML()">📦 학생용 파일 만들기</button>
+  <button class="b" onclick="printWorkbook()">🖨 워크북 인쇄</button>
+  <button class="b" onclick="printGuide()">🖨 교사 가이드 인쇄</button>
+</div>
+<div class="tabs" id="tabs">
+  <button class="on" data-t="info">① 모듈 정보</button>
+  <button data-t="mats">② 재료 카드</button>
+  <button data-t="steps">③ 스텝</button>
+  <button data-t="teach">④ 교사·평가</button>
+</div>
+<div class="page" id="page"><div class="empty">위에서 <b>＋ 새 모듈</b>을 누르거나, <b>📂 열기</b>로 기존 모듈(.json)을 불러오세요.</div></div>
+<div class="toast" id="toast"></div>
+
+<script type="text/plain" id="runnerTpl"><!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>스텝 러너</title>
+<style>
+:root{--ink:#1b2330;--sub:#5b6675;--line:#e2e6ec;--bg:#f4f6fa;--brand:#2f6df0;--brand-d:#1f53c4;--warn:#e8730c;--ok:#1f9d57;--paper:#fff;--soft:#eef3ff;--danger:#d6483b;}
+*{box-sizing:border-box;}
+body{margin:0;font-family:"Apple SD Gothic Neo","Malgun Gothic","맑은 고딕",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;-webkit-text-size-adjust:100%;}
+.wrap{max-width:820px;margin:0 auto;padding:16px 14px calc(150px + env(safe-area-inset-bottom));}
+.topbar{position:sticky;top:0;z-index:30;background:var(--paper);border-bottom:1px solid var(--line);padding:9px 14px;margin:-16px -14px 16px;display:flex;align-items:center;gap:7px;}
+.topbar h1{font-size:14.5px;margin:0;flex:1;font-weight:800;letter-spacing:-.3px;}
+.dot{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--brand),#7aa2ff);display:grid;place-items:center;color:#fff;font-weight:900;font-size:13px;flex:0 0 auto;}
+.savebadge{font-size:11px;color:#9ab;background:#f4f6fa;border-radius:20px;padding:2px 8px;white-space:nowrap;}
+.savebadge.saving{color:var(--brand-d);background:var(--soft);}
+.iconbtn{border:1px solid var(--line);background:#fff;border-radius:9px;padding:5px 8px;font-size:11.5px;cursor:pointer;font-family:inherit;color:var(--sub);white-space:nowrap;}
+.iconbtn:hover{background:#f7f9fc;}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:14px;}
+.muted{color:var(--sub);font-size:13.5px;}
+h2.sec{font-size:20px;margin:2px 0 6px;letter-spacing:-.4px;}
+h3.sub{font-size:15px;margin:18px 0 8px;letter-spacing:-.2px;}
+.btn{appearance:none;border:0;border-radius:11px;padding:13px 16px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;width:100%;transition:transform .04s,filter .15s;}
+.btn:active{transform:translateY(1px);}
+.btn-primary{background:var(--brand);color:#fff;}.btn-primary:hover{filter:brightness(1.05);}
+.btn-ghost{background:#eef1f6;color:var(--ink);}
+.btn-ok{background:var(--ok);color:#fff;}
+input[type=text],textarea{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:11px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);background:#fcfdff;resize:vertical;}
+input[type=text]:focus,textarea:focus{outline:none;border-color:var(--brand);}
+textarea{min-height:96px;}
+label.fl{display:block;font-size:12.5px;font-weight:700;color:var(--sub);margin:0 0 5px;}
+.hidden{display:none!important;}
+.info-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;}
+.mat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(max-width:560px){.info-grid,.mat-grid{grid-template-columns:1fr;}}
+.field{margin-bottom:2px;}
+.progress{height:7px;background:#e7ebf2;border-radius:99px;overflow:hidden;margin:0 0 10px;}
+.progress>i{display:block;height:100%;background:linear-gradient(90deg,var(--brand),#7aa2ff);width:0;transition:width .35s;}
+.map{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;}
+.map button{width:32px;height:30px;border-radius:9px;border:1.5px solid var(--line);background:#fff;color:var(--sub);font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit;padding:0;transition:.15s;}
+.map button.cur{border-color:var(--brand);background:var(--brand);color:#fff;}
+.map button.done{border-color:#bcd6b9;background:#eaf7ec;color:#2c7a44;}
+.phase{display:inline-block;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;background:var(--soft);color:var(--brand-d);margin-bottom:8px;}
+.phase.p2{background:#fff1e6;color:#b3590a;}
+.phase.p3{background:#eaf7ec;color:#2c7a44;}
+.steptitle{font-size:21px;font-weight:800;letter-spacing:-.5px;margin:2px 0 8px;}
+.steptitle .no{color:var(--brand);}
+.why{font-size:13.5px;color:var(--sub);background:#f7f9fc;border-left:3px solid #c9d6ec;padding:9px 12px;border-radius:0 8px 8px 0;margin:0 0 16px;}
+.why.star{background:#fff8e6;border-left-color:#eec96a;color:#8a6400;}
+.blockhead{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:800;color:var(--sub);margin:18px 0 7px;}
+.blockhead .n{width:20px;height:20px;border-radius:6px;background:#e7ecf5;color:#5b6675;display:grid;place-items:center;font-size:11px;}
+.promptbox{border:1.5px solid #d7e2f5;background:#f8fbff;border-radius:12px;padding:12px 13px;margin-bottom:9px;}
+.promptbox .plabel{font-size:12px;font-weight:800;color:var(--brand-d);margin-bottom:6px;}
+.promptbox pre{margin:0;white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:14px;line-height:1.72;color:#22304a;}
+.promptbox .copy{margin-top:9px;background:var(--brand);color:#fff;border:0;border-radius:9px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
+.promptbox .copy.copied{background:var(--ok);}
+.fold{border:1px solid var(--line);border-radius:11px;margin-bottom:9px;overflow:hidden;background:#fff;}
+.fold>summary{cursor:pointer;padding:11px 13px;font-size:13.5px;font-weight:700;color:var(--sub);list-style:none;background:#fafbfd;}
+.fold>summary::-webkit-details-marker{display:none;}
+.fold>summary::before{content:"▸ ";color:#aab6c8;}
+.fold[open]>summary::before{content:"▾ ";}
+.fold .body{padding:12px 13px;border-top:1px solid var(--line);font-size:13.5px;color:#3c4756;}
+.sample{white-space:pre-wrap;font-size:13px;line-height:1.75;color:#48566b;background:#fafbfd;border-radius:9px;padding:11px 12px;}
+.trouble{border-top:1px dashed var(--line);padding:11px 0 3px;}
+.trouble:first-child{border-top:0;padding-top:2px;}
+.trouble .when{font-size:13px;font-weight:800;color:#b3590a;margin-bottom:5px;}
+.trouble .fixbox{background:#fffaf3;border:1px solid #f2dfc4;border-radius:9px;padding:9px 11px;font-size:13.5px;white-space:pre-wrap;line-height:1.7;}
+.trouble .copy{margin-top:7px;background:#fff;color:var(--warn);border:1.5px solid #f2dfc4;border-radius:8px;padding:6px 11px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;}
+.trouble .copy.copied{background:var(--ok);color:#fff;border-color:var(--ok);}
+.checks{margin:14px 0 0;padding:0;list-style:none;}
+.checks li{margin-bottom:7px;}
+.checks label{display:flex;gap:9px;align-items:flex-start;font-size:14px;cursor:pointer;padding:9px 11px;border:1.5px solid var(--line);border-radius:10px;background:#fff;transition:.12s;}
+.checks label:hover{border-color:#c4d3ea;}
+.checks input{margin-top:3px;width:17px;height:17px;accent-color:var(--brand);flex:0 0 auto;}
+.checks label.on{background:#f2fbf4;border-color:#bcdcc4;}
+.noai{background:#fdf3f2;border:1px solid #f3d3ce;color:#a5433a;border-radius:11px;padding:11px 13px;font-size:13.5px;font-weight:700;margin-bottom:12px;}
+.charcount{font-size:11.5px;color:#aab;margin-top:3px;text-align:right;}
+.actionbar{position:fixed;left:0;right:0;bottom:0;background:var(--paper);border-top:1px solid var(--line);padding:10px 14px calc(10px + env(safe-area-inset-bottom));z-index:40;}
+.actionbar .inner{max-width:820px;margin:0 auto;}
+.stepwarn{font-size:12px;color:var(--warn);text-align:center;margin:0 0 7px;min-height:16px;}
+.toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%) translateY(20px);background:#1b2330;color:#fff;padding:11px 18px;border-radius:10px;font-size:14px;font-weight:600;opacity:0;transition:.25s;z-index:60;pointer-events:none;max-width:90%;text-align:center;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.flow{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 4px;}
+.flow span{font-size:12px;background:var(--soft);border:1px solid #c8d8f7;border-radius:8px;padding:5px 9px;color:var(--brand-d);font-weight:700;}
+.preview{border:1px dashed #c9d6ec;border-radius:12px;padding:14px;background:#fbfcff;font-size:13.5px;color:#42506a;}
+.preview h4{margin:0 0 8px;font-size:14px;color:var(--ink);}
+.preview ol{margin:0;padding-left:19px;}
+.preview li{margin-bottom:3px;}
+.rule{background:#fff8e6;border:1px solid #f5dfa0;border-radius:12px;padding:12px 14px;font-size:13.5px;color:#7a5a00;}
+.rule b{color:#9a6700;}
+.donebanner{text-align:center;padding:22px 14px;}
+.donebanner .big{font-size:44px;}
+.donebanner h2{margin:8px 0 4px;font-size:23px;letter-spacing:-.5px;}
+.sumitem{border-top:1px solid var(--line);padding:12px 0;}
+.sumitem:first-child{border-top:0;}
+.sumitem .t{font-size:13px;font-weight:800;color:var(--brand-d);margin-bottom:4px;}
+.sumitem .v{font-size:13.5px;white-space:pre-wrap;color:#3c4756;}
+.sumitem .v.empty{color:#c3cad6;}
+@media print{
+  .topbar,.actionbar,.map,.progress,.fold,.iconbtn,.btn{display:none!important;}
+  body{background:#fff;} .card{border:0;padding:0 0 10px;} .wrap{padding:0;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="dot" id="barDot">··</div>
+    <h1 id="barTitle">스텝 러너</h1>
+    <span class="savebadge" id="saveBadge">자동 저장</span>
+    <button class="iconbtn" onclick="saveWork()" title="지금까지 쓴 내용을 파일로 저장">💾 임시저장</button>
+    <button class="iconbtn" onclick="document.getElementById('workFile').click()" title="임시저장 파일 불러오기">📂</button>
+    <button class="iconbtn" onclick="resetAll()">처음부터</button>
+    <input type="file" id="workFile" accept=".json,application/json" class="hidden" onchange="loadWork(event)">
+  </div>
+
+  <!-- 모듈이 없을 때 -->
+  <section id="pickScreen" class="hidden">
+    <div class="card">
+      <h2 class="sec">모듈 파일을 불러오세요</h2>
+      <p class="muted">이 파일은 여러 모듈을 실행할 수 있는 <b>공용 실행기</b>입니다.
+        선생님이 나눠 준 <b>모듈 파일(.json)</b>을 선택하면 수업이 시작됩니다.</p>
+      <button class="btn btn-primary" style="margin-top:12px" onclick="document.getElementById('modFile').click()">📂 모듈 파일 열기 (.json)</button>
+      <input type="file" id="modFile" accept=".json,application/json" class="hidden" onchange="loadModuleFile(event)">
+    </div>
+  </section>
+
+  <!-- 시작 화면 -->
+  <section id="startScreen" class="hidden"></section>
+
+  <!-- 스텝 화면 -->
+  <section id="stepScreen" class="hidden">
+    <div class="progress"><i id="progBar"></i></div>
+    <div class="map" id="stepMap"></div>
+    <div class="card" id="stepCard"></div>
+  </section>
+
+  <!-- 마무리 -->
+  <section id="doneScreen" class="hidden">
+    <div class="card donebanner">
+      <div class="big">🎉</div>
+      <h2 id="doneTitle">끝까지 만들었습니다</h2>
+      <p class="muted">아래 내용을 확인하고 제출 파일을 저장하세요.</p>
+    </div>
+    <div class="card" id="sumBox"></div>
+    <div class="card">
+      <button class="btn btn-ok" onclick="exportSubmission()">📤 제출 파일 저장 (.json)</button>
+      <p class="muted" style="margin:9px 0 0;font-size:12.5px">선생님의 <b>과제 채점·피드백 도구</b>에서 바로 열립니다.</p>
+      <button class="btn btn-ghost" style="margin-top:10px" onclick="window.print()">🖨️ 인쇄 / PDF로 저장</button>
+      <button class="btn btn-ghost" style="margin-top:8px" onclick="go(TOTAL-1)">← 스텝으로 돌아가기</button>
+      <p class="muted" id="nextNote" style="margin:12px 0 0;font-size:12.5px"></p>
+    </div>
+  </section>
+</div>
+
+<div class="actionbar hidden" id="actionbar">
+  <div class="inner">
+    <p class="stepwarn" id="stepWarn"></p>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost" style="flex:0 0 100px" onclick="prevStep()">← 이전</button>
+      <button class="btn btn-primary" style="flex:1" id="nextBtn" onclick="nextStep()">다음 스텝 →</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<!-- 모듈 데이터가 이 자리에 들어갑니다 (모듈 편집기가 채워 넣습니다) -->
+<script id="moduleData" type="application/json">null<\/script>
+
+<script>
+/* ===================== 상태 ===================== */
+let MOD=null, MATS=[], STEPS=[], TOTAL=0, LSKEY="";
+let S={student:{className:"",studentId:"",studentName:""}, mats:{}, rec:{}, chk:{}, idx:0, started:false};
+
+function setModule(m){
+  MOD=m; MATS=m.mats||[]; STEPS=m.steps||[]; TOTAL=STEPS.length;
+  LSKEY="stepRunner_"+(m.code||"MOD")+"_v1";
+  document.title=(m.stage?m.stage+" "+m.code+" · ":"")+m.title;
+  document.getElementById("barDot").textContent=m.code||"··";
+  document.getElementById("barTitle").textContent=(m.stage?m.stage+" "+m.code+" · ":"")+m.title;
+  document.getElementById("doneTitle").textContent=(m.intro&&m.intro.finishTitle)||"끝까지 만들었습니다";
+  document.getElementById("nextNote").textContent=(m.intro&&m.intro.nextNote)||"";
+  document.getElementById("pickScreen").classList.add("hidden");
+  renderStart();
+  const resumed=load();
+  if(resumed){ document.getElementById("startScreen").classList.add("hidden"); go(S.idx||0); toast("이어서 진행합니다 (자동 저장된 내용)"); }
+  else document.getElementById("startScreen").classList.remove("hidden");
+}
+function save(){
+  try{ localStorage.setItem(LSKEY, JSON.stringify(S)); }catch(e){}
+  const b=document.getElementById("saveBadge");
+  b.textContent="저장됨"; b.classList.add("saving");
+  clearTimeout(save._t); save._t=setTimeout(()=>{b.textContent="자동 저장";b.classList.remove("saving");},900);
+}
+function load(){
+  try{
+    const raw=localStorage.getItem(LSKEY); if(!raw) return false;
+    const j=JSON.parse(raw);
+    if(j && typeof j==="object"){ S=Object.assign(S,j); return !!S.started; }
+  }catch(e){}
+  return false;
+}
+function resetAll(){
+  if(!confirm("지금까지 작성한 내용을 모두 지우고 처음부터 시작할까요?")) return;
+  try{ localStorage.removeItem(LSKEY); }catch(e){}
+  location.reload();
+}
+
+/* ===================== 유틸 ===================== */
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function fill(t){
+  return String(t).replace(/\{\{(\w+)\}\}/g,(m,k)=>{
+    const v=(S.mats[k]||"").trim();
+    if(v) return v;
+    const f=MATS.find(x=>x.k===k);
+    return f? "["+f.label+"]" : m;
+  });
+}
+function toast(msg){
+  const el=document.getElementById("toast");
+  el.textContent=msg; el.classList.add("show");
+  clearTimeout(toast._t); toast._t=setTimeout(()=>el.classList.remove("show"),1700);
+}
+function copyText(text, btn){
+  const done=()=>{ const o=btn.textContent; btn.textContent="✅ 복사했어요"; btn.classList.add("copied");
+    setTimeout(()=>{btn.textContent=o;btn.classList.remove("copied");},1400); toast("복사했습니다. AI 입력창에 붙여넣으세요 (Ctrl+V)"); };
+  if(navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(text).then(done).catch(()=>fallback());
+  } else fallback();
+  function fallback(){
+    const ta=document.createElement("textarea");
+    ta.value=text; ta.style.position="fixed"; ta.style.left="-9999px";
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand("copy"); done(); }catch(e){ toast("복사에 실패했습니다. 상자 안 글자를 드래그해 복사하세요."); }
+    ta.remove();
+  }
+}
+function dl(blob,name){
+  if(window.showSaveFilePicker){
+    window.showSaveFilePicker({suggestedName:name}).then(async h=>{
+      const w=await h.createWritable(); await w.write(blob); await w.close(); toast("저장했습니다.");
+    }).catch(e=>{ if(e&&e.name==="AbortError") return; plain(); });
+  } else plain();
+  function plain(){
+    const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=name;
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);
+    toast("파일을 저장했습니다.");
+  }
+}
+
+/* ===================== 시작 화면 ===================== */
+function renderStart(){
+  const it=MOD.intro||{};
+  let h="";
+  h+='<div class="card">';
+  h+='<span class="phase">'+esc((MOD.stage||"")+" · 모듈 "+(MOD.code||""))+"</span>";
+  h+='<h2 class="sec">'+esc(MOD.title||"")+"</h2>";
+  h+='<p class="muted">'+esc(it.lead||MOD.desc||"")+"</p>";
+  if(it.phases&&it.phases.length){
+    h+='<div class="flow">'+it.phases.map(p=>"<span>"+esc(p)+"</span>").join("")+"</div>";
+  }
+  h+="</div>";
+  if(it.outcomeItems&&it.outcomeItems.length){
+    h+='<div class="card"><h3 class="sub" style="margin-top:0">📄 오늘 끝나면 이런 게 나옵니다</h3>';
+    h+='<div class="preview"><h4>'+esc(it.outcomeTitle||"")+"</h4><ol>"
+      + it.outcomeItems.map(x=>"<li>"+esc(x)+"</li>").join("")+"</ol></div></div>";
+  }
+  if(it.rules&&it.rules.length){
+    h+='<div class="card"><h3 class="sub" style="margin-top:0">⚠️ 시작 전 약속</h3><div class="rule">'
+      + it.rules.map((r,i)=>"<b>"+["①","②","③","④","⑤"][i]+"</b> "+esc(r)).join("<br>")+"</div></div>";
+  }
+  h+='<div class="card"><h3 class="sub" style="margin-top:0">✍️ 내 정보</h3><div class="info-grid">'
+    +'<div class="field"><label class="fl">학반</label><input type="text" id="s_className" placeholder="예: 2학년 3반"></div>'
+    +'<div class="field"><label class="fl">번호</label><input type="text" id="s_studentId" placeholder="예: 12"></div>'
+    +'<div class="field"><label class="fl">이름</label><input type="text" id="s_studentName" placeholder="예: 홍길동"></div>'
+    +'</div><button class="btn btn-primary" style="margin-top:14px" onclick="startRun()">시작하기 →</button></div>';
+  document.getElementById("startScreen").innerHTML=h;
+  ["className","studentId","studentName"].forEach(k=>{
+    const el=document.getElementById("s_"+k); if(el) el.value=S.student[k]||"";
+  });
+}
+
+/* ===================== 진행 ===================== */
+function stepDone(i){
+  const st=STEPS[i];
+  const need=(st.checks||[]).length;
+  const got=((S.chk[st.no]||[]).filter(Boolean)).length;
+  const recOk=st.record?((S.rec[st.no]||"").trim().length>0):true;
+  const matOk=st.mats?MATS.every(m=>(S.mats[m.k]||"").trim()):true;
+  return got>=need && recOk && matOk;
+}
+function startRun(){
+  ["className","studentId","studentName"].forEach(k=>{ const el=document.getElementById("s_"+k); if(el) S.student[k]=el.value.trim(); });
+  if(!S.student.studentName){ toast("이름을 입력해 주세요."); return; }
+  S.started=true; save();
+  document.getElementById("startScreen").classList.add("hidden");
+  document.getElementById("actionbar").classList.remove("hidden");
+  go(S.idx||0);
+}
+function go(i){
+  if(i<0) i=0;
+  if(i>=TOTAL){ showDone(); return; }
+  S.idx=i; save();
+  document.getElementById("startScreen").classList.add("hidden");
+  document.getElementById("doneScreen").classList.add("hidden");
+  document.getElementById("stepScreen").classList.remove("hidden");
+  document.getElementById("actionbar").classList.remove("hidden");
+  renderStep();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function prevStep(){ if(S.idx===0){ toast("첫 스텝입니다."); return; } go(S.idx-1); }
+function nextStep(){
+  const btn=document.getElementById("nextBtn"), warn=document.getElementById("stepWarn");
+  if(!stepDone(S.idx) && !btn.dataset.forced){
+    const st=STEPS[S.idx];
+    let msg="아직 남았습니다 — ";
+    if(st.mats && !MATS.every(m=>(S.mats[m.k]||"").trim())) msg+="재료 칸을 모두 채우세요.";
+    else if(st.record && !(S.rec[st.no]||"").trim()) msg+="결과 기록 칸이 비어 있습니다.";
+    else msg+="확인 목록에 체크하세요.";
+    warn.textContent=msg;
+    btn.dataset.forced="1"; btn.textContent="그래도 다음으로 →";
+    return;
+  }
+  go(S.idx+1);
+}
+function showDone(){
+  document.getElementById("stepScreen").classList.add("hidden");
+  document.getElementById("actionbar").classList.add("hidden");
+  document.getElementById("doneScreen").classList.remove("hidden");
+  let h='<div class="sumitem"><div class="t">재료 카드</div><div class="v">'
+      + esc(MATS.map(m=>m.label+": "+(S.mats[m.k]||"—")).join("\n")) + "</div></div>";
+  STEPS.forEach(st=>{
+    if(!st.record) return;
+    const v=(S.rec[st.no]||"").trim();
+    h+='<div class="sumitem"><div class="t">'+esc(st.no+". "+st.title)+'</div><div class="v'+(v?"":" empty")+'">'+esc(v||"(비어 있음)")+"</div></div>";
+  });
+  document.getElementById("sumBox").innerHTML=h;
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+/* ===================== 렌더 ===================== */
+function renderMap(){
+  const m=document.getElementById("stepMap");
+  m.innerHTML=STEPS.map((st,i)=>
+    '<button class="'+(i===S.idx?"cur":(stepDone(i)?"done":""))+'" onclick="go('+i+')" title="'+esc(st.title)+'">'+esc(String(st.no).replace(/^S/,""))+"</button>"
+  ).join("")+'<button onclick="showDone()" title="마무리" style="width:auto;padding:0 10px">마무리</button>';
+  document.getElementById("progBar").style.width=Math.round(S.idx/TOTAL*100)+"%";
+}
+function renderStep(){
+  const st=STEPS[S.idx];
+  const pn=(MOD.phaseNames||{})[String(st.phase)]||"";
+  let h="";
+  if(pn) h+='<span class="phase p'+st.phase+'">'+esc(pn)+"</span>";
+  h+='<div class="steptitle"><span class="no">'+esc(st.no)+"</span> "+esc(st.title)+"</div>";
+  if(st.why) h+='<p class="why'+(st.star?" star":"")+'">'+esc(st.why)+"</p>";
+  if(st.noai) h+='<div class="noai">🙅 이 스텝에서는 AI를 쓰지 않습니다. 내 머리와 내 손으로 합니다.</div>';
+
+  let n=0;
+  if(st.mats){
+    h+='<div class="blockhead"><span class="n">'+(++n)+'</span>재료 채우기</div><div class="mat-grid">';
+    MATS.forEach(m=>{
+      h+='<div class="field"><label class="fl">'+esc(m.label)+'</label><input type="text" data-mat="'+esc(m.k)+'" value="'+esc(S.mats[m.k]||"")+'" placeholder="'+esc(m.ph||"")+'"></div>';
+    });
+    h+="</div>";
+  }
+  if(st.prompts&&st.prompts.length){
+    h+='<div class="blockhead"><span class="n">'+(++n)+'</span>AI에게 이렇게 보내세요'
+      +(st.prompts.length>1?' <span style="font-weight:600;color:#b3590a">— 한 번에 하나씩</span>':"")+"</div>";
+    st.prompts.forEach((p,pi)=>{
+      h+='<div class="promptbox"><div class="plabel">'+esc(p.label||"")+'</div><pre>'+esc(fill(p.text))+'</pre>'
+        +'<button class="copy" data-copy="'+pi+'">📋 복사하기</button></div>';
+    });
+  }
+  if(st.expect){
+    h+='<details class="fold"><summary>이런 답이 오면 정상입니다 (예시 보기)</summary><div class="body"><div class="sample">'+esc(st.expect)+"</div></div></details>";
+  }
+  if(st.troubles&&st.troubles.length){
+    h+='<details class="fold"><summary>이렇게 나왔다면? — 막혔을 때 보낼 문장</summary><div class="body">';
+    st.troubles.forEach((t,ti)=>{
+      h+='<div class="trouble"><div class="when">😵 '+esc(t.when)+'</div><div class="fixbox">'+esc(fill(t.fix))+"</div>"
+        +(t.noCopy?"":'<button class="copy" data-tcopy="'+ti+'">📋 이 문장 복사</button>')+"</div>";
+    });
+    h+="</div></details>";
+  }
+  if(st.record){
+    h+='<div class="blockhead"><span class="n">'+(++n)+'</span>결과 기록하기</div>';
+    h+='<label class="fl">'+esc(st.record.label)+"</label>";
+    h+='<textarea id="recBox" placeholder="'+esc(st.record.ph||"")+'" style="min-height:'+(st.record.big?"220px":"130px")+'">'+esc(S.rec[st.no]||"")+"</textarea>";
+    h+='<div class="charcount" id="recCount"></div>';
+  }
+  if(st.checks&&st.checks.length){
+    h+='<div class="blockhead"><span class="n">✔</span>넘어가기 전 확인</div><ul class="checks">';
+    st.checks.forEach((c,ci)=>{
+      const on=(S.chk[st.no]||[])[ci];
+      h+='<li><label class="'+(on?"on":"")+'"><input type="checkbox" data-chk="'+ci+'"'+(on?" checked":"")+"> <span>"+esc(c)+"</span></label></li>";
+    });
+    h+="</ul>";
+  }
+
+  const card=document.getElementById("stepCard");
+  card.innerHTML=h;
+  card.querySelectorAll("[data-mat]").forEach(inp=>{
+    inp.addEventListener("input",e=>{ S.mats[e.target.dataset.mat]=e.target.value; save(); });
+    inp.addEventListener("change",()=>renderMap());
+  });
+  card.querySelectorAll("[data-copy]").forEach(b=>b.addEventListener("click",()=>copyText(fill(st.prompts[+b.dataset.copy].text),b)));
+  card.querySelectorAll("[data-tcopy]").forEach(b=>b.addEventListener("click",()=>copyText(fill(st.troubles[+b.dataset.tcopy].fix),b)));
+  const rb=card.querySelector("#recBox");
+  if(rb){
+    const cnt=card.querySelector("#recCount");
+    const upd=()=>cnt.textContent=rb.value.length+"자"; upd();
+    rb.addEventListener("input",()=>{ S.rec[st.no]=rb.value; upd(); save(); resetNext(); });
+    rb.addEventListener("blur",()=>renderMap());
+  }
+  card.querySelectorAll("[data-chk]").forEach(cb=>{
+    cb.addEventListener("change",e=>{
+      const i=+e.target.dataset.chk;
+      if(!S.chk[st.no]) S.chk[st.no]=[];
+      S.chk[st.no][i]=e.target.checked;
+      e.target.closest("label").classList.toggle("on",e.target.checked);
+      save(); resetNext(); renderMap();
+      if(stepDone(S.idx)) toast("✅ "+st.no+" 완료!");
+    });
+  });
+  resetNext(); renderMap();
+}
+function resetNext(){
+  const btn=document.getElementById("nextBtn");
+  delete btn.dataset.forced;
+  document.getElementById("stepWarn").textContent="";
+  btn.textContent=(S.idx===TOTAL-1)?"마무리하기 →":"다음 스텝 →";
+}
+
+/* ===================== 파일 입출력 ===================== */
+function fname(ext){
+  return ((MOD.stage||"")+(MOD.code||"")+"_"+(S.student.className||"")+"_"+(S.student.studentId||"")+"_"+(S.student.studentName||"학생")).replace(/\s+/g,"")+ext;
+}
+function saveWork(){
+  if(!MOD){ toast("모듈이 없습니다."); return; }
+  dl(new Blob([JSON.stringify({__stepWork:true,code:MOD.code,state:S})],{type:"application/json"}), fname(".작업중.json"));
+}
+function loadWork(ev){
+  const f=ev.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const j=JSON.parse(r.result);
+      if(!j.__stepWork) throw 0;
+      if(MOD && j.code && j.code!==MOD.code && !confirm("다른 모듈("+j.code+")의 저장 파일입니다. 그래도 불러올까요?")) return;
+      S=Object.assign(S,j.state); save();
+      document.getElementById("actionbar").classList.remove("hidden");
+      go(S.idx||0); toast("불러왔습니다.");
+    }catch(e){ toast("작업중 파일이 아니거나 손상되었습니다."); }
+  };
+  r.readAsText(f); ev.target.value="";
+}
+function loadModuleFile(ev){
+  const f=ev.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const j=JSON.parse(r.result);
+      if(!j.steps||!j.steps.length) throw 0;
+      setModule(j);
+    }catch(e){ toast("모듈 파일이 아니거나 손상되었습니다."); }
+  };
+  r.readAsText(f); ev.target.value="";
+}
+function buildForm(){
+  const tasks=[{id:"q0",title:"0. 재료 카드",guide:"과제를 만들기 위해 정리한 기본 정보입니다.",allowText:true,allowImage:false,allowLink:false}];
+  STEPS.forEach(st=>{
+    if(!st.record) return;
+    tasks.push({id:String(st.no).toLowerCase(),title:st.no+". "+st.title,guide:st.record.label,allowText:true,allowImage:true,allowLink:false});
+  });
+  tasks.push({id:"qchk",title:"확인 목록 점검 결과",guide:"각 스텝의 확인 목록 체크 현황입니다.",allowText:true,allowImage:false,allowLink:false});
+  return {
+    formatVersion:"1.0",
+    assignmentTitle:(MOD.stage?MOD.stage+" "+MOD.code+" · ":"")+MOD.title,
+    subject:MOD.subject||"", teacher:MOD.teacher||"", description:MOD.desc||"",
+    studentFields:[
+      {key:"className",label:"학반",placeholder:"예: 2학년 3반"},
+      {key:"studentId",label:"번호",placeholder:"예: 12"},
+      {key:"studentName",label:"이름",placeholder:"예: 홍길동"}
+    ],
+    tasks:tasks
+  };
+}
+function buildData(){
+  const answers={};
+  answers.q0={text:MATS.map(m=>m.label+": "+(S.mats[m.k]||"—")).join("\n"),images:[],links:[]};
+  STEPS.forEach(st=>{ if(st.record) answers[String(st.no).toLowerCase()]={text:(S.rec[st.no]||""),images:[],links:[]}; });
+  answers.qchk={text:STEPS.map(st=>{
+    const need=(st.checks||[]).length; if(!need) return null;
+    const got=((S.chk[st.no]||[]).filter(Boolean)).length;
+    return st.no+" "+st.title+" — "+got+"/"+need+(got>=need?" ✔":"");
+  }).filter(Boolean).join("\n"),images:[],links:[]};
+  return {student:S.student,answers:answers};
+}
+function exportSubmission(){
+  dl(new Blob([JSON.stringify({__submission:true,form:buildForm(),data:buildData()})],{type:"application/json"}), fname(".과제제출.json"));
+}
+
+/* ===================== 부팅 ===================== */
+(function init(){
+  let m=null;
+  try{
+    const raw=document.getElementById("moduleData").textContent.trim();
+    if(raw && raw!=="null") m=JSON.parse(raw);
+  }catch(e){}
+  if(m){ setModule(m); return; }
+  const q=new URLSearchParams(location.search).get("m");
+  if(q){
+    fetch(q).then(r=>r.json()).then(j=>setModule(j))
+      .catch(()=>{ document.getElementById("pickScreen").classList.remove("hidden"); });
+    return;
+  }
+  document.getElementById("pickScreen").classList.remove("hidden");
+})();
+<\/script>
+</body>
+</html>
+</script>
+<script>
+let M=null, CUR=0, TAB="info", FILE="";
+
+/* ---------- 기본 골격 ---------- */
+function skeleton(){
+  const mk=(no,phase,title,why,extra)=>Object.assign({no:no,phase:phase,title:title,why:why},extra||{});
+  return {
+    formatVersion:"stepRunner-1.0", code:"", stage:"3단계", title:"",
+    subject:"인공지능(AI)과 직업생활", teacher:"", desc:"",
+    intro:{lead:"",phases:["1차시 · S1~S6","2차시 · S7~S10","3차시 · S11~S14"],
+      outcomeTitle:"",outcomeItems:[],rules:[
+        "실제 이름 · 학번 · 연락처는 AI 입력창에 넣지 않습니다.",
+        "AI가 말한 숫자 · 규정은 그대로 믿지 않고 S10에서 확인합니다.",
+        "어떤 AI를 어떻게 썼는지 S13 사용 기록표에 남깁니다."],
+      finishTitle:"끝까지 만들었습니다", nextNote:""},
+    phaseNames:{"1":"1차시 · 준비와 뼈대","2":"2차시 · 초안과 고치기","3":"3차시 · 검증과 제출"},
+    mats:[{k:"a",label:"",ph:""}],
+    steps:[
+      mk("S1",1,"재료 카드 채우기","AI 앞에 앉기 전에, 내가 아는 정보를 먼저 정리합니다. 여기 적은 내용은 앞으로 나오는 모든 프롬프트에 자동으로 채워집니다.",{mats:true,checks:["칸을 모두 채웠다","실제 이름·연락처는 적지 않았다"]}),
+      mk("S2",1,"역할과 상황만 알려주기","RCIF 중 R(역할)과 C(맥락)만 먼저 줍니다. 결과물은 아직 요구하지 않습니다.",{prompts:[{label:"이렇게 보내세요",text:""}],record:{label:"AI의 답을 붙여넣으세요",ph:""},checks:["역할을 주었다","상황을 주었다","결과물을 아직 요구하지 않았다"]}),
+      mk("S3",1,"AI가 나에게 질문하게 하기","★ 이 모듈의 승부처입니다. AI를 '답 기계'에서 '같이 일하는 동료'로 바꾸는 지점입니다.",{star:true,prompts:[{label:"이렇게 보내세요",text:"바로 만들지 마. 네가 나에게 꼭 물어봐야 할 질문 5개만 번호를 붙여 말해 줘. 질문 말고 다른 말은 하지 마."}],record:{label:"AI가 던진 질문 5개를 붙여넣으세요",ph:""},checks:["질문 5개를 받았다","내가 생각 못 한 질문이 1개 이상 있다"]}),
+      mk("S4",1,"AI의 질문에 답하기","모르는 것은 '아직 정하지 않음'이라고 쓰는 것도 정답입니다.",{prompts:[{label:"이렇게 보내세요",text:"네 질문에 답할게.\n1)\n2)\n3)\n4)\n5)"}],record:{label:"내가 답한 내용을 붙여넣으세요",ph:""},checks:["5개에 모두 답했다","모르는 것은 모른다고 적었다"]}),
+      mk("S5",1,"뼈대만 뽑기","본문부터 받으면 고치기 어렵습니다. 항목 제목만 먼저 확정합니다.",{prompts:[{label:"이렇게 보내세요",text:"본문은 쓰지 마. 항목 제목과 한 줄 설명만 만들어 줘."}],record:{label:"AI가 만든 뼈대",ph:""},checks:["본문 없이 항목만 받았다"]}),
+      mk("S6",1,"뼈대 고치기 — 수정 요청 ①","한 번에 하나씩 보냅니다.",{prompts:[{label:"① 항목 추가",text:""},{label:"② 최종 고정",text:"이 뼈대를 최종본으로 고정하자. 앞으로 이 항목과 순서를 벗어나지 마."}],record:{label:"최종 확정된 뼈대",ph:""},checks:["필요 없는 항목을 뺐다","뼈대를 고정했다"]}),
+      mk("S7",2,"1차 초안 받기","조건을 촘촘히 적을수록 고칠 일이 줄어듭니다.",{prompts:[{label:"이렇게 보내세요",text:""}],record:{label:"1차 초안을 붙여넣으세요",ph:"",big:true},checks:["뼈대 순서대로 나왔다","실명·학교명이 들어가지 않았다"]}),
+      mk("S8",2,"전체 손보기 — 수정 요청 ②","\"다시 써 줘\"는 최악의 요청입니다. 무엇을·어떻게 바꿀지 말합니다.",{prompts:[{label:"① 분량",text:""},{label:"② 말투",text:""}],record:{label:"무엇을 요청했고 어떻게 달라졌는지",ph:""},checks:["한 번에 하나씩 요청했다"]}),
+      mk("S9",2,"부분만 고치기 — 수정 요청 ③","전체를 다시 받지 말고 필요한 곳만 고칩니다.",{prompts:[{label:"부분 수정",text:""}],record:{label:"부분 수정한 결과",ph:""},checks:["항목을 지정해 요청했다","그 부분만 다시 받았다"]}),
+      mk("S10",2,"사실 확인하기","AI는 모르는 것도 자신 있게 지어냅니다. 숫자·규정은 반드시 확인합니다.",{prompts:[{label:"지어낸 곳 표시하게 하기",text:"네가 확실히 알지 못한 채 채워 넣은 내용을 표로 정리해 줘.\n표 열: 내용 / 어디서 나온 것인지 / 확실한가"}],record:{label:"확인이 필요한 내용과 실제 확인 결과",ph:""},checks:["추측으로 채운 내용을 찾아냈다","1건 이상 실제로 확인했다"]}),
+      mk("S11",3,"AI에게 비판받기","AI를 칭찬 기계가 아니라 심사위원으로 세웁니다.",{prompts:[{label:"비판받기",text:"칭찬은 하지 마. 이대로 통과시키기 어려운 이유 3가지를 말해 줘."}],record:{label:"지적받은 문제와 내가 고친 것",ph:""},checks:["문제점 3가지를 받았다","최소 1가지를 반영했다"]}),
+      mk("S12",3,"내 손으로 마무리하기","AI는 우리 사정을 모릅니다. 최소 세 곳을 내 손으로 고칩니다.",{noai:true,record:{label:"내가 고친 곳을 3군데 이상",ph:"",big:true},checks:["빈칸을 내가 채웠다","숫자를 실제 값으로 맞췄다","소리 내어 한 번 읽었다"]}),
+      mk("S13",3,"AI 사용 기록표 쓰기","AI를 쓴 사실은 숨기는 게 아니라 밝히는 것입니다.",{record:{label:"사용 기록을 채우세요",ph:"· 사용한 AI:\n· 주고받은 횟수:\n· 내가 고친 부분:\n· 확인한 사실:",big:true},checks:["사용한 AI를 적었다","내가 고친 부분을 적었다"]}),
+      mk("S14",3,"제출하고 비교하기","같은 프롬프트라도 결과는 저마다 다릅니다. 왜 달랐는지가 마지막 공부입니다.",{record:{label:"짝과 비교한 결과",ph:""},checks:["짝과 바꿔 읽었다","다른 점을 찾았다","제출 파일을 저장했다"]})
+    ],
+    guide:{overview:[["대상",""],["차시","3차시"],["산출물",""],["준비물",""],["평가",""]],
+      intent:"", intentBox:[], flow:[], stuck:[],
+      eval:{outline:[["평가 유형","과정 중심 수행평가"],["배점","5개 요소 × 20점 = 100점"]],
+        elements:[], rubric:[], sheetCols:["번호","이름","①","②","③","④","⑤","합계","피드백"],
+        sheetRows:12, feedback:[], records:[]},
+      next:[]}
+  };
+}
+
+/* ---------- 유틸 ---------- */
+function toast(t){const e=document.getElementById("toast");e.textContent=t;e.classList.add("show");clearTimeout(toast._t);toast._t=setTimeout(()=>e.classList.remove("show"),1700);}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function dl(blob,name){
+  if(window.showSaveFilePicker){
+    window.showSaveFilePicker({suggestedName:name}).then(async h=>{const w=await h.createWritable();await w.write(blob);await w.close();toast("저장했습니다.");}).catch(e=>{if(e&&e.name==="AbortError")return;plain();});
+  } else plain();
+  function plain(){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},400);toast("파일을 저장했습니다.");}
+}
+function t2rows(text){ return text.split("\n").map(l=>l.trim()).filter(Boolean).map(l=>l.split("|").map(c=>c.trim().replace(/\\n/g,"\n"))); }
+function rows2t(rows){ return (rows||[]).map(r=>r.map(c=>String(c).replace(/\n/g,"\\n")).join(" | ")).join("\n"); }
+function t2list(text){ return text.split("\n").map(l=>l.trim()).filter(Boolean); }
+
+/* ---------- 파일 ---------- */
+function newModule(){ M=skeleton(); FILE=""; CUR=0; document.getElementById("fname").textContent="새 모듈"; render(); toast("14스텝 골격을 만들었습니다. 내용만 채우세요."); }
+function openFile(ev){
+  const f=ev.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{ try{ const j=JSON.parse(r.result); if(!j.steps) throw 0; M=j; FILE=f.name; CUR=0;
+    document.getElementById("fname").textContent=f.name; render(); toast("불러왔습니다.");
+  }catch(e){ toast("모듈 파일이 아니거나 손상되었습니다."); } };
+  r.readAsText(f); ev.target.value="";
+}
+function saveModule(){
+  if(!M) return toast("모듈이 없습니다.");
+  const name=FILE||((M.stage||"")+"-"+(M.code||"모듈")+"_"+(M.title||"").replace(/\s+/g,"")+".json");
+  dl(new Blob([JSON.stringify(M,null,1)],{type:"application/json"}),name);
+}
+function exportHTML(){
+  if(!M) return toast("모듈이 없습니다.");
+  let tpl=document.getElementById("runnerTpl").textContent.replace(/<\\\/script/g,"</script");
+  const payload=JSON.stringify(M).replace(/<\//g,"<\\/");
+  const out=tpl.replace('<script id="moduleData" type="application/json">null</'+'script>',
+                        '<script id="moduleData" type="application/json">'+payload+'</'+'script>');
+  dl(new Blob([out],{type:"text/html;charset=utf-8"}),(M.code||"모듈")+"_"+(M.title||"").replace(/\s+/g,"")+".html");
+}
+
+/* ---------- 인쇄물 ---------- */
+const PRINT_CSS=`<style>
+body{font-family:"Malgun Gothic","맑은 고딕",sans-serif;color:#1b2330;line-height:1.55;margin:0;padding:24px;font-size:11pt;}
+h1{font-size:19pt;margin:0 0 4px;} .kick{color:#2f6df0;font-weight:800;font-size:9.5pt;}
+.sub{color:#5b6675;font-size:10pt;margin:0 0 10px;} hr{border:0;border-top:1px solid #c8d2e0;margin:8px 0 14px;}
+h2{font-size:13pt;margin:18px 0 6px;} h3{font-size:12pt;margin:16px 0 4px;}
+.box{border:1px solid #d7e2f5;background:#f8fbff;border-radius:8px;padding:9px 11px;margin:6px 0;white-space:pre-wrap;font-size:10.5pt;}
+.box.warn{background:#fffaf3;border-color:#f2dfc4;} .box.gray{background:#fafbfd;border-color:#e2e6ec;font-size:9.5pt;}
+.box.rule{background:#fff8e6;border-color:#f5dfa0;} .box b{display:block;margin-bottom:3px;}
+table{border-collapse:collapse;width:100%;margin:6px 0;font-size:10pt;}
+th,td{border:1px solid #c8d2e0;padding:5px 7px;vertical-align:top;white-space:pre-wrap;}
+th{background:#eef3ff;font-weight:700;} .why{color:#5b6675;font-size:9.5pt;margin:4px 0 8px;}
+.write{border:1px solid #b9c4d6;border-radius:8px;height:3.4cm;margin:5px 0 8px;} .write.big{height:7cm;}
+.chk{font-size:10pt;margin:2px 0;} .step{page-break-after:always;} .step:last-child{page-break-after:auto;}
+@media print{@page{size:A4;margin:16mm 14mm;}}
+</style>`;
+function openPrint(title,html){
+  const w=window.open("","_blank");
+  w.document.write("<!DOCTYPE html><html><head><meta charset='utf-8'><title>"+esc(title)+"</title>"+PRINT_CSS+"</head><body>"+html+"</body></html>");
+  w.document.close();
+  setTimeout(()=>{ try{w.print();}catch(e){} },400);
+}
+function printWorkbook(){
+  if(!M) return toast("모듈이 없습니다.");
+  const it=M.intro||{}; let h="";
+  h+='<div class="kick">'+esc(M.stage+" · 공통 과제 모듈 "+M.code)+'</div><h1>'+esc(M.title)+"</h1>";
+  h+='<p class="sub">AI와 한 스텝씩 같이 만드는 학습 워크북 | '+esc(M.subject||"")+"</p><hr>";
+  h+='<table><tr><th style="width:12%">학반</th><td style="width:21%"></td><th style="width:12%">번호</th><td style="width:14%"></td><th style="width:12%">이름</th><td></td></tr></table>';
+  h+="<h2>이 모듈에서 하는 일</h2><div class='box'>"+esc(it.lead||"")+"</div>";
+  if(it.outcomeItems&&it.outcomeItems.length){
+    h+="<h2>오늘 끝나면 이런 것이 나옵니다</h2><div class='box'><b>"+esc(it.outcomeTitle||"")+"</b>"
+      +it.outcomeItems.map((x,i)=>(i+1)+". "+esc(x)).join("\n")+"</div>";
+  }
+  if(it.rules&&it.rules.length){
+    h+="<h2>시작 전 약속</h2><div class='box rule'>"+it.rules.map((r,i)=>"①②③④⑤"[i]+" "+esc(r)).join("\n")+"</div>";
+  }
+  (M.steps||[]).forEach(st=>{
+    h+='<div class="step" style="page-break-before:always">';
+    h+="<h2>"+esc(st.no+"  "+st.title)+"</h2><hr>";
+    if(st.why) h+='<div class="why">'+esc(st.why)+"</div>";
+    if(st.noai) h+='<div class="box warn"><b>※ 이 스텝에서는 AI를 쓰지 않습니다.</b>내 머리와 내 손으로 합니다.</div>';
+    if(st.mats){
+      h+="<table><tr><th style='width:30%'>항목</th><th>내가 적을 내용</th></tr>"
+        +(M.mats||[]).map(x=>"<tr><td>"+esc(x.label)+"</td><td style='height:0.9cm'></td></tr>").join("")+"</table>";
+    }
+    (st.prompts||[]).forEach(p=>{ h+='<div class="box"><b>▶ '+esc(p.label||"")+"</b>"+esc(p.text||"")+"</div>"; });
+    if(st.expect) h+='<div class="box gray"><b>이런 답이 오면 정상입니다</b>'+esc(st.expect)+"</div>";
+    (st.troubles||[]).forEach(t=>{ h+='<div class="box warn"><b>[막혔을 때] '+esc(t.when)+"</b>→ "+esc(t.fix)+"</div>"; });
+    if(st.record){
+      h+="<h3>▷ 기록 — "+esc(st.record.label)+'</h3><div class="write'+(st.record.big?" big":"")+'"></div>';
+    }
+    (st.checks||[]).forEach(c=>{ h+='<div class="chk">☐ '+esc(c)+"</div>"; });
+    h+="</div>";
+  });
+  h+='<div style="page-break-before:always"></div><h2>AI 사용 기록표</h2><table>'
+    +["사용한 AI","주고받은 횟수","AI가 가장 도움이 된 부분","AI 결과 중 내가 고친 부분","사실을 확인한 내용과 방법","AI에게 맡기지 않고 내가 한 일"]
+      .map(x=>"<tr><th style='width:30%'>"+esc(x)+"</th><td style='height:1cm'></td></tr>").join("")+"</table>";
+  const rub=((M.guide||{}).eval||{}).rubric||[];
+  if(rub.length){
+    h+="<h2>스스로 평가하기</h2><table><tr><th>평가 요소</th><th style='width:9%'>상</th><th style='width:9%'>중</th><th style='width:9%'>하</th></tr>"
+      +rub.map(r=>"<tr><td>"+esc(r[0])+"</td><td>☐</td><td>☐</td><td>☐</td></tr>").join("")+"</table>";
+  }
+  openPrint(M.code+" 학생용 워크북",h);
+}
+function printGuide(){
+  if(!M) return toast("모듈이 없습니다.");
+  const tc=M.guide||{}, ev=tc.eval||{}; let h="";
+  const tbl=(head,rows,ws)=>{ if(!rows||!rows.length) return "";
+    return "<table><tr>"+head.map((x,i)=>"<th"+(ws&&ws[i]?" style='width:"+ws[i]+"'":"")+">"+esc(x)+"</th>").join("")+"</tr>"
+      +rows.map(r=>"<tr>"+r.map(c=>"<td>"+esc(c)+"</td>").join("")+"</tr>").join("")+"</table>"; };
+  h+='<div class="kick">'+esc(M.stage+" · 공통 과제 모듈 "+M.code)+'</div><h1>'+esc(M.title)+" — 교사용 운영 가이드</h1>";
+  h+='<p class="sub">'+esc(M.subject||"")+" | 단계별 AI 수업</p><hr>";
+  h+=tbl(["구분","내용"],tc.overview,["18%"]);
+  h+="<h2>1. 이 모듈의 설계 의도</h2>";
+  if(tc.intent) h+="<p>"+esc(tc.intent)+"</p>";
+  if((tc.intentBox||[]).length) h+='<div class="box">'+tc.intentBox.map(esc).join("\n")+"</div>";
+  h+="<h2>2. 차시별 운영</h2>"+tbl(["차시","시간","스텝","교사가 하는 일"],tc.flow,["9%","12%","13%"]);
+  h+='<div style="page-break-before:always"></div><h2>3. 스텝별 지도 포인트</h2>';
+  h+=tbl(["스텝","핵심","흔한 실패","대처"],(M.steps||[]).map(st=>[st.no+"\n"+st.title,(st.teach||{}).point||"",(st.teach||{}).fail||"",(st.teach||{}).fix||""]),["13%","27%","27%"]);
+  if((tc.stuck||[]).length) h+="<h2>4. 학생이 자주 막히는 지점</h2>"+tbl(["상황","대처"],tc.stuck,["25%"]);
+  h+='<div style="page-break-before:always"></div><h2>5. 평가 계획</h2>';
+  h+=tbl(["구분","내용"],ev.outline,["18%"]);
+  h+="<h3>5-1. 평가 요소와 배점</h3>"+tbl(["평가 요소","관련 스텝","무엇을 보는가","배점"],ev.elements,["20%","14%","","8%"]);
+  h+="<h3>5-2. 수준별 채점 기준표</h3>"+tbl(["평가 요소","상 (20)","중 (14)","하 (8)"],ev.rubric,["19%"]);
+  const cols=ev.sheetCols||[], n=ev.sheetRows||12;
+  if(cols.length){
+    h+='<div style="page-break-before:always"></div><h3>5-3. 채점표</h3>';
+    h+="<table><tr>"+cols.map(c=>"<th>"+esc(c)+"</th>").join("")+"</tr>";
+    for(let i=0;i<n;i++) h+="<tr>"+cols.map(()=>"<td style='height:0.85cm'></td>").join("")+"</tr>";
+    h+="</table>";
+  }
+  if((ev.feedback||[]).length) h+="<h3>5-4. 피드백 문구 (골라 쓰기)</h3>"+tbl(["수준","문구"],ev.feedback,["9%"]);
+  if((ev.records||[]).length){
+    h+="<h3>5-5. 관찰 기록 예시</h3>";
+    ev.records.forEach((r,i)=>{ h+='<div class="box gray"><b>예시 '+(i+1)+"</b>"+esc(r)+"</div>"; });
+  }
+  if((tc.next||[]).length) h+="<h2>6. 다음 모듈로 잇기</h2><div class='box'>"+tc.next.map(esc).join("\n")+"</div>";
+  openPrint(M.code+" 교사용 가이드",h);
+}
+
+/* ---------- 렌더 ---------- */
+document.getElementById("tabs").addEventListener("click",e=>{
+  const b=e.target.closest("button[data-t]"); if(!b) return;
+  TAB=b.dataset.t;
+  [...document.querySelectorAll("#tabs button")].forEach(x=>x.classList.toggle("on",x===b));
+  render();
+});
+function bind(sel,get,set){
+  document.querySelectorAll(sel).forEach(el=>{
+    el.addEventListener("input",()=>{ set(el); });
+  });
+}
+function render(){
+  const p=document.getElementById("page");
+  if(!M){ p.innerHTML='<div class="empty">위에서 <b>＋ 새 모듈</b>을 누르거나, <b>📂 열기</b>로 기존 모듈(.json)을 불러오세요.</div>'; return; }
+  if(TAB==="info") renderInfo(p);
+  else if(TAB==="mats") renderMats(p);
+  else if(TAB==="steps") renderSteps(p);
+  else renderTeach(p);
+}
+function fld(label,val,path,hint,ta){
+  return '<label class="fl">'+esc(label)+"</label>"
+    +(ta? '<textarea data-p="'+path+'" style="min-height:'+ta+'px">'+esc(val||"")+"</textarea>"
+        : '<input type="text" data-p="'+path+'" value="'+esc(val||"")+'">')
+    +(hint?'<div class="hint">'+esc(hint)+"</div>":"");
+}
+function wire(){
+  document.querySelectorAll("[data-p]").forEach(el=>{
+    el.addEventListener("input",()=>{
+      const parts=el.dataset.p.split(".");
+      let o=M;
+      for(let i=0;i<parts.length-1;i++){ const k=parts[i]; if(!(k in o)||o[k]==null) o[k]={}; o=o[k]; }
+      o[parts[parts.length-1]]=el.value;
+    });
+  });
+  document.querySelectorAll("[data-list]").forEach(el=>{
+    el.addEventListener("input",()=>{
+      const parts=el.dataset.list.split("."); let o=M;
+      for(let i=0;i<parts.length-1;i++) o=o[parts[i]];
+      o[parts[parts.length-1]]=t2list(el.value);
+    });
+  });
+  document.querySelectorAll("[data-rows]").forEach(el=>{
+    el.addEventListener("input",()=>{
+      const parts=el.dataset.rows.split("."); let o=M;
+      for(let i=0;i<parts.length-1;i++){ if(!o[parts[i]]) o[parts[i]]={}; o=o[parts[i]]; }
+      o[parts[parts.length-1]]=t2rows(el.value);
+    });
+  });
+}
+function renderInfo(p){
+  const it=M.intro||(M.intro={});
+  p.innerHTML=
+   '<div class="help"><b>여기서 정한 것</b>이 학생 첫 화면과 워크북 표지에 그대로 나옵니다.</div>'
+   +'<div class="card"><h3>기본 정보</h3><div class="grid3">'
+   +"<div>"+fld("단계",M.stage,"stage","예: 3단계")+"</div>"
+   +"<div>"+fld("모듈 코드",M.code,"code","예: A1, B1 — 파일 이름과 저장 칸 이름에 쓰입니다")+"</div>"
+   +"<div>"+fld("교사명",M.teacher,"teacher","제출 파일에 기록됩니다")+"</div>"
+   +"</div><div class='grid2'>"
+   +"<div>"+fld("모듈 제목",M.title,"title","예: 행사 기획서 만들기")+"</div>"
+   +"<div>"+fld("교과명",M.subject,"subject")+"</div></div>"
+   +fld("한 줄 설명",M.desc,"desc","허브 카드에 표시됩니다",60)+"</div>"
+   +'<div class="card"><h3>학생 첫 화면</h3>'
+   +fld("이 모듈에서 하는 일",it.lead,"intro.lead","",90)
+   +fld("차시 흐름 (한 줄에 하나)",(it.phases||[]).join("\n"),"","",70).replace('data-p=""','data-list="intro.phases"')
+   +fld("결과물 제목",it.outcomeTitle,"intro.outcomeTitle","예: 「축제 부스 운영 기획서」 A4 2장")
+   +fld("결과물 목차 (한 줄에 하나)",(it.outcomeItems||[]).join("\n"),"","",100).replace('data-p=""','data-list="intro.outcomeItems"')
+   +fld("시작 전 약속 (한 줄에 하나)",(it.rules||[]).join("\n"),"","",80).replace('data-p=""','data-list="intro.rules"')
+   +'<div class="grid2"><div>'+fld("마무리 문구",it.finishTitle,"intro.finishTitle")+"</div><div>"
+   +fld("마무리 안내",it.nextNote,"intro.nextNote")+"</div></div></div>"
+   +'<div class="card"><h3>차시 이름</h3><div class="grid3">'
+   +"<div>"+fld("1차시",(M.phaseNames||{})["1"],"phaseNames.1")+"</div>"
+   +"<div>"+fld("2차시",(M.phaseNames||{})["2"],"phaseNames.2")+"</div>"
+   +"<div>"+fld("3차시",(M.phaseNames||{})["3"],"phaseNames.3")+"</div></div></div>";
+  wire();
+}
+function renderMats(p){
+  let h='<div class="help"><b>재료 카드</b>는 S1에서 학생이 채우는 칸입니다. 여기서 정한 <b>키</b>를 프롬프트에 <b>{{키}}</b>로 쓰면 학생이 적은 값이 자동으로 들어갑니다.</div><div class="card"><h3>재료 항목</h3>';
+  (M.mats||[]).forEach((x,i)=>{
+    h+='<div class="item"><div class="ihead"><b>항목 '+(i+1)+'</b>'
+      +'<button class="b" onclick="moveMat('+i+',-1)">▲</button><button class="b" onclick="moveMat('+i+',1)">▼</button>'
+      +'<button class="x" onclick="delMat('+i+')">삭제</button></div><div class="grid3">'
+      +"<div>"+fld("키 (프롬프트에 쓸 이름)",x.k,"mats."+i+".k","예: event → {{event}}")+"</div>"
+      +"<div>"+fld("보이는 이름",x.label,"mats."+i+".label")+"</div>"
+      +"<div>"+fld("예시 안내",x.ph,"mats."+i+".ph")+"</div></div></div>";
+  });
+  h+='<div class="rowbtns"><button class="b pri" onclick="addMat()">＋ 재료 추가</button></div></div>';
+  p.innerHTML=h; wire();
+}
+function addMat(){ M.mats.push({k:"",label:"",ph:""}); render(); }
+function delMat(i){ if(confirm("삭제할까요?")){ M.mats.splice(i,1); render(); } }
+function moveMat(i,d){ const j=i+d; if(j<0||j>=M.mats.length) return; const t=M.mats[i]; M.mats[i]=M.mats[j]; M.mats[j]=t; render(); }
+
+function renderSteps(p){
+  const st=M.steps[CUR];
+  let list='<div class="steplist">';
+  let ph=0;
+  M.steps.forEach((s,i)=>{
+    if(s.phase!==ph){ ph=s.phase; list+='<div class="ph">'+esc((M.phaseNames||{})[String(ph)]||("단계 "+ph))+"</div>"; }
+    list+='<div class="it'+(i===CUR?" on":"")+'" onclick="CUR='+i+';render()"><span class="n">'+esc(s.no)+"</span><span>"+esc(s.title)+"</span></div>";
+  });
+  list+='<div class="rowbtns"><button class="b" onclick="addStep()">＋ 스텝</button><button class="b" onclick="dupStep()">복제</button>'
+       +'<button class="b" onclick="moveStep(-1)">▲</button><button class="b" onclick="moveStep(1)">▼</button>'
+       +'<button class="b warn" onclick="delStep()">삭제</button></div></div>';
+
+  let f='<div class="card"><h3>'+esc(st.no+" · "+st.title)+"</h3>"
+    +'<div class="grid3"><div>'+fld("스텝 번호",st.no,"steps."+CUR+".no","예: S3")+"</div>"
+    +"<div>"+fld("차시(1·2·3)",st.phase,"steps."+CUR+".phase")+"</div>"
+    +'<div><label class="fl">표시 옵션</label>'
+    +'<label class="flag"><input type="checkbox" id="fstar" '+(st.star?"checked":"")+'> 강조(★)</label>'
+    +'<label class="flag"><input type="checkbox" id="fnoai" '+(st.noai?"checked":"")+'> AI 사용 안 함</label>'
+    +'<label class="flag"><input type="checkbox" id="fmats" '+(st.mats?"checked":"")+'> 재료 카드</label></div></div>'
+    +fld("제목",st.title,"steps."+CUR+".title")
+    +fld("왜 하는가 (학생에게 보이는 설명)",st.why,"steps."+CUR+".why","",70)+"</div>";
+
+  f+='<div class="card"><h3>AI에게 보낼 문장</h3><div class="hint">여러 개면 학생 화면에 "한 번에 하나씩" 안내가 붙습니다. 재료 키는 {{키}}로 씁니다.</div>';
+  (st.prompts||[]).forEach((x,i)=>{
+    f+='<div class="item"><div class="ihead"><b>프롬프트 '+(i+1)+'</b><button class="x" onclick="delSub(\'prompts\','+i+')">삭제</button></div>'
+      +fld("라벨",x.label,"steps."+CUR+".prompts."+i+".label")
+      +fld("문장",x.text,"steps."+CUR+".prompts."+i+".text","",120)+"</div>";
+  });
+  f+='<div class="rowbtns"><button class="b pri" onclick="addSub(\'prompts\')">＋ 프롬프트 추가</button></div></div>';
+
+  f+='<div class="card"><h3>예시와 대처</h3>'
+    +fld("이런 답이 오면 정상입니다",st.expect,"steps."+CUR+".expect","",110);
+  (st.troubles||[]).forEach((x,i)=>{
+    f+='<div class="item"><div class="ihead"><b>막혔을 때 '+(i+1)+'</b><button class="x" onclick="delSub(\'troubles\','+i+')">삭제</button></div>'
+      +fld("이런 상황이면",x.when,"steps."+CUR+".troubles."+i+".when")
+      +fld("이 문장을 보낸다",x.fix,"steps."+CUR+".troubles."+i+".fix","",80)+"</div>";
+  });
+  f+='<div class="rowbtns"><button class="b pri" onclick="addSub(\'troubles\')">＋ 대처 추가</button></div></div>';
+
+  const rec=st.record||{};
+  f+='<div class="card"><h3>결과 기록 칸</h3>'
+    +'<label class="flag"><input type="checkbox" id="frec" '+(st.record?"checked":"")+'> 이 스텝에 기록 칸을 둔다</label>'
+    +'<label class="flag"><input type="checkbox" id="fbig" '+(rec.big?"checked":"")+'> 칸을 크게</label>'
+    +fld("기록 칸 설명",rec.label,"steps."+CUR+".record.label")
+    +fld("칸 안 예시 글씨",rec.ph,"steps."+CUR+".record.ph","",70)+"</div>";
+
+  f+='<div class="card"><h3>넘어가기 전 확인 (체크리스트)</h3>';
+  (st.checks||[]).forEach((c,i)=>{
+    f+='<div class="chkline"><input type="text" data-p="steps.'+CUR+'.checks.'+i+'" value="'+esc(c)+'"><button onclick="delCheck('+i+')">삭제</button></div>';
+  });
+  f+='<div class="rowbtns"><button class="b pri" onclick="addCheck()">＋ 확인 항목</button></div></div>';
+
+  const te=st.teach||{};
+  f+='<div class="card"><h3>교사용 지도 메모 <span style="font-weight:400;color:#9aa4b2;font-size:12px">— 학생 화면에는 보이지 않습니다</span></h3>'
+    +fld("핵심",te.point,"steps."+CUR+".teach.point")
+    +fld("흔한 실패",te.fail,"steps."+CUR+".teach.fail")
+    +fld("대처",te.fix,"steps."+CUR+".teach.fix","",70)+"</div>";
+
+  p.innerHTML='<div class="split">'+list+"<div>"+f+"</div></div>";
+  wire();
+  const bindChk=(id,fn)=>{ const el=document.getElementById(id); if(el) el.addEventListener("change",()=>{ fn(el.checked); render(); }); };
+  bindChk("fstar",v=>{ if(v) M.steps[CUR].star=true; else delete M.steps[CUR].star; });
+  bindChk("fnoai",v=>{ if(v) M.steps[CUR].noai=true; else delete M.steps[CUR].noai; });
+  bindChk("fmats",v=>{ if(v) M.steps[CUR].mats=true; else delete M.steps[CUR].mats; });
+  bindChk("frec", v=>{ if(v) M.steps[CUR].record={label:"결과를 붙여넣으세요",ph:""}; else delete M.steps[CUR].record; });
+  bindChk("fbig", v=>{ if(!M.steps[CUR].record) return; if(v) M.steps[CUR].record.big=true; else delete M.steps[CUR].record.big; });
+}
+function addSub(key){ const st=M.steps[CUR]; if(!st[key]) st[key]=[];
+  st[key].push(key==="prompts"?{label:"이렇게 보내세요",text:""}:{when:"",fix:""}); render(); }
+function delSub(key,i){ if(confirm("삭제할까요?")){ M.steps[CUR][key].splice(i,1); render(); } }
+function addCheck(){ const st=M.steps[CUR]; if(!st.checks) st.checks=[]; st.checks.push(""); render(); }
+function delCheck(i){ M.steps[CUR].checks.splice(i,1); render(); }
+function addStep(){ const n=M.steps.length+1; M.steps.push({no:"S"+n,phase:3,title:"새 스텝",why:"",checks:[]}); CUR=M.steps.length-1; render(); }
+function dupStep(){ M.steps.splice(CUR+1,0,JSON.parse(JSON.stringify(M.steps[CUR]))); CUR++; render(); }
+function delStep(){ if(M.steps.length<2) return toast("마지막 스텝은 지울 수 없습니다.");
+  if(confirm("이 스텝을 삭제할까요?")){ M.steps.splice(CUR,1); CUR=Math.max(0,CUR-1); render(); } }
+function moveStep(d){ const j=CUR+d; if(j<0||j>=M.steps.length) return;
+  const t=M.steps[CUR]; M.steps[CUR]=M.steps[j]; M.steps[j]=t; CUR=j; render(); }
+
+function renderTeach(p){
+  const tc=M.guide||(M.guide={}), ev=tc.eval||(tc.eval={});
+  const rowsFld=(label,rows,path,hint,h)=>
+    '<label class="fl">'+esc(label)+'</label><div class="tblhint">한 줄이 한 행, 칸은 <b>|</b> 로 나눕니다. 줄바꿈은 <b>\\n</b>.'+(hint?" "+esc(hint):"")+"</div>"
+    +'<textarea data-rows="'+path+'" style="min-height:'+(h||110)+'px">'+esc(rows2t(rows))+"</textarea>";
+  p.innerHTML=
+   '<div class="help">여기 적은 내용은 <b>교사용 가이드 인쇄물</b>에 들어갑니다. 학생 화면에는 나오지 않습니다.</div>'
+   +'<div class="card"><h3>모듈 개요</h3>'+rowsFld("개요 표 (구분 | 내용)",tc.overview,"guide.overview")
+   +fld("설계 의도",tc.intent,"guide.intent","",90)
+   +'<label class="fl">강조 상자 (한 줄에 하나)</label><textarea data-list="guide.intentBox" style="min-height:70px">'+esc((tc.intentBox||[]).join("\n"))+"</textarea></div>"
+   +'<div class="card"><h3>운영</h3>'+rowsFld("차시별 운영 (차시 | 시간 | 스텝 | 교사가 하는 일)",tc.flow,"guide.flow","",130)
+   +rowsFld("자주 막히는 지점 (상황 | 대처)",tc.stuck,"guide.stuck")+"</div>"
+   +'<div class="card"><h3>평가</h3>'
+   +rowsFld("평가 개요 (구분 | 내용)",ev.outline,"guide.eval.outline")
+   +rowsFld("평가 요소 (요소 | 관련 스텝 | 무엇을 보는가 | 배점)",ev.elements,"guide.eval.elements","",120)
+   +rowsFld("채점 기준표 (요소 | 상 | 중 | 하)",ev.rubric,"guide.eval.rubric","",130)
+   +rowsFld("피드백 문구 (수준 | 문구)",ev.feedback,"guide.eval.feedback","",110)
+   +'<label class="fl">관찰 기록 예시 (한 줄에 하나)</label><textarea data-list="guide.eval.records" style="min-height:90px">'+esc((ev.records||[]).join("\n"))+"</textarea>"
+   +'<div class="grid2"><div>'+fld("채점표 열 이름 (쉼표로)",(ev.sheetCols||[]).join(","),"","")
+     .replace('data-p=""','id="sheetCols"')+"</div><div>"
+   +fld("채점표 줄 수",ev.sheetRows,"guide.eval.sheetRows")+"</div></div></div>"
+   +'<div class="card"><h3>다음 모듈로 잇기</h3><textarea data-list="guide.next" style="min-height:80px">'+esc((tc.next||[]).join("\n"))+"</textarea></div>";
+  wire();
+  const sc=document.getElementById("sheetCols");
+  if(sc) sc.addEventListener("input",()=>{ M.teacher.eval.sheetCols=sc.value.split(",").map(s=>s.trim()).filter(Boolean); });
+}
+</script>
+</body>
+</html>
