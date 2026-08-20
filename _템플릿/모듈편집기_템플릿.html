@@ -211,11 +211,15 @@ function printWorkbook(){
     h+="<h2>"+esc(st.no+"  "+st.title)+"</h2><hr>";
     if(st.why) h+='<div class="why">'+esc(lbl(st.why))+"</div>";
     if(st.noai) h+='<div class="box warn"><b>※ 이 스텝에서는 AI를 쓰지 않습니다.</b>내 머리와 내 손으로 합니다.</div>';
+    if(st.panel&&(st.panel.lines||[]).length){
+      h+='<div class="box">'+(st.panel.title?"<b>"+esc(lbl(st.panel.title))+"</b>":"")
+        +st.panel.lines.map(x=>esc(lbl(x))).join("\n")+"</div>";
+    }
     if(st.mats){
       h+="<table><tr><th style='width:30%'>항목</th><th>내가 적을 내용</th></tr>"
         +(M.mats||[]).map(x=>"<tr><td>"+esc(x.label)+"</td><td style='height:0.9cm'></td></tr>").join("")+"</table>";
     }
-    (st.prompts||[]).forEach(p=>{ h+='<div class="box"><b>▶ '+esc(p.label||"")+"</b>"+esc(lbl(p.text||""))+"</div>"; });
+    (st.prompts||[]).forEach(p=>{ h+='<div class="box'+(p.noCopy?" gray":"")+'"><b>▶ '+esc(p.label||"")+"</b>"+esc(lbl(p.text||""))+"</div>"; });
     if(st.expect) h+='<div class="box gray"><b>이런 답이 오면 정상입니다</b>'+esc(lbl(st.expect))+"</div>";
     (st.troubles||[]).forEach(t=>{ h+='<div class="box warn"><b>[막혔을 때] '+esc(t.when)+"</b>→ "+esc(lbl(t.fix))+"</div>"; });
     if(st.record){
@@ -385,9 +389,16 @@ function renderSteps(p){
     +fld("제목",st.title,"steps."+CUR+".title")
     +fld("왜 하는가 (학생에게 보이는 설명)",st.why,"steps."+CUR+".why","",70)+"</div>";
 
+  const pn=st.panel||{};
+  f+='<div class="card"><h3>활동 자료 <span style="font-weight:400;color:#9aa4b2;font-size:12px">— 학생이 보고 판단할 목록·읽을거리</span></h3>'
+    +fld("제목",pn.title,"steps."+CUR+".panel.title","비워 두면 제목 없이 상자만 나옵니다")
+    +'<label class="fl">내용 (한 줄에 하나)</label><textarea data-list="steps.'+CUR+'.panel.lines" style="min-height:90px">'
+    +esc((pn.lines||[]).join("\n"))+"</textarea></div>";
+
   f+='<div class="card"><h3>AI에게 보낼 문장</h3><div class="hint">여러 개면 학생 화면에 "한 번에 하나씩" 안내가 붙습니다. 재료 키는 {{키}}로 씁니다.</div>';
   (st.prompts||[]).forEach((x,i)=>{
     f+='<div class="item"><div class="ihead"><b>프롬프트 '+(i+1)+'</b><button class="x" onclick="delSub(\'prompts\','+i+')">삭제</button></div>'
+      +'<label class="flag"><input type="checkbox" data-nocopy="'+i+'" '+(x.noCopy?"checked":"")+'> AI에게 보내는 것이 아님 (복사 버튼 없음)</label>'
       +fld("라벨",x.label,"steps."+CUR+".prompts."+i+".label")
       +fld("문장",x.text,"steps."+CUR+".prompts."+i+".text","",120)+"</div>";
   });
@@ -423,6 +434,12 @@ function renderSteps(p){
 
   p.innerHTML='<div class="split">'+list+"<div>"+f+"</div></div>";
   wire();
+  document.querySelectorAll("[data-nocopy]").forEach(cb=>{
+    cb.addEventListener("change",()=>{
+      const i=+cb.dataset.nocopy;
+      if(cb.checked) M.steps[CUR].prompts[i].noCopy=true; else delete M.steps[CUR].prompts[i].noCopy;
+    });
+  });
   const bindChk=(id,fn)=>{ const el=document.getElementById(id); if(el) el.addEventListener("change",()=>{ fn(el.checked); render(); }); };
   bindChk("fstar",v=>{ if(v) M.steps[CUR].star=true; else delete M.steps[CUR].star; });
   bindChk("fnoai",v=>{ if(v) M.steps[CUR].noai=true; else delete M.steps[CUR].noai; });

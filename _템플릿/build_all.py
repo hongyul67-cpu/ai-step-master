@@ -73,8 +73,12 @@ def box(doc, lines, fill="F8FBFF", border="D7E2F5", size=10.5, bold_first=False)
         if bold_first and i == 0: r.bold = True
     doc.add_paragraph().paragraph_format.space_after = Pt(2)
 
-def writebox(doc, h_cm=3.0, label=None):
+def writebox(doc, h_cm=3.0, label=None, guide=""):
     if label: para(doc, label, size=9.5, bold=True, color="5B6675", sb=4, sa=2)
+    if guide and "\n" in guide:
+        for ln in guide.split("\n"):
+            para(doc, ln if ln.strip() else " ", size=9, color="9AA4B2", sa=0, indent=0.3)
+        h_cm = max(1.2, h_cm - 0.35 * len(guide.split("\n")))
     t = doc.add_table(rows=1, cols=1); t.autofit = False
     t.columns[0].width = Cm(17.0)
     row = t.rows[0]; row.height_rule = WD_ROW_HEIGHT_RULE.AT_LEAST; row.height = Cm(h_cm)
@@ -150,12 +154,17 @@ def build_workbook(m, path):
         if st.get("noai"):
             box(doc, ["※ 이 스텝에서는 AI를 쓰지 않습니다. 내 머리와 내 손으로 합니다."],
                 fill="FDF3F2", border="F3D3CE", size=10)
+        if st.get("panel") and st["panel"].get("lines"):
+            box(doc, ([lbl(m, st["panel"].get("title", ""))] if st["panel"].get("title") else [])
+                     + [lbl(m, x) for x in st["panel"]["lines"]],
+                fill="FBFCFF", border="C9D6EC", size=11, bold_first=bool(st["panel"].get("title")))
         if st.get("mats"):
             table(doc, [["항목", "내가 적을 내용"]] + [[x["label"], ""] for x in m["mats"]],
                   [5.0, 12.0], size=10, rowheight=0.8)
         if st.get("prompts"):
-            t = "▶ AI에게 이렇게 보내세요"
-            if len(st["prompts"]) > 1: t += "   (반드시 한 번에 하나씩)"
+            all_nocopy = all(p.get("noCopy") for p in st["prompts"])
+            t = "▶ 이렇게 하세요" if all_nocopy else "▶ AI에게 이렇게 보내세요"
+            if len(st["prompts"]) > 1 and not all_nocopy: t += "   (반드시 한 번에 하나씩)"
             para(doc, t, size=10.5, bold=True, color="1F53C4", sb=4, sa=3)
             for p in st["prompts"]:
                 box(doc, [p.get("label", "")] + lbl(m, p["text"]).split("\n"),
@@ -170,7 +179,8 @@ def build_workbook(m, path):
                     fill="FFFAF3", border="F2DFC4", size=9.5, bold_first=True)
         if st.get("record"):
             h = 7.5 if st["record"].get("big") else 3.6
-            writebox(doc, h, "▷ 기록 — " + lbl(m, st["record"]["label"]))
+            writebox(doc, h, "▷ 기록 — " + lbl(m, st["record"]["label"]),
+                     guide=lbl(m, st["record"].get("ph", "")))
         if st.get("checks"):
             para(doc, "✔ 넘어가기 전 확인", size=9.5, bold=True, color="5B6675", sa=2)
             for c in st["checks"]: para(doc, "☐  " + lbl(m, c), size=10, sa=1, indent=0.3)

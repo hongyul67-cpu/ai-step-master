@@ -66,6 +66,12 @@ label.fl{display:block;font-size:12.5px;font-weight:700;color:var(--sub);margin:
 .fold>summary::before{content:"▸ ";color:#aab6c8;}
 .fold[open]>summary::before{content:"▾ ";}
 .fold .body{padding:12px 13px;border-top:1px solid var(--line);font-size:13.5px;color:#3c4756;}
+.panel{border:1.5px solid #c9d6ec;background:#fbfcff;border-radius:12px;padding:13px 15px;margin:0 0 14px;}
+.panel h4{margin:0 0 8px;font-size:14px;letter-spacing:-.2px;color:var(--ink);}
+.panel .ln{font-size:14.5px;line-height:1.9;color:#2c3a52;}
+.fillform{border:1px solid var(--line);background:#fff;color:var(--sub);border-radius:8px;padding:5px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;margin-left:6px;}
+.fillform:hover{background:#f5f8fd;}
+.reclabel{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin:0 0 5px;}
 .sample{white-space:pre-wrap;font-size:13px;line-height:1.75;color:#48566b;background:#fafbfd;border-radius:9px;padding:11px 12px;}
 .trouble{border-top:1px dashed var(--line);padding:11px 0 3px;}
 .trouble:first-child{border-top:0;padding-top:2px;}
@@ -458,6 +464,10 @@ function renderStep(){
   h+='<div class="steptitle"><span class="no">'+esc(st.no)+"</span> "+esc(st.title)+"</div>";
   if(st.why) h+='<p class="why'+(st.star?" star":"")+'">'+esc(fill(st.why))+"</p>";
   if(st.noai) h+='<div class="noai">🙅 이 스텝에서는 AI를 쓰지 않습니다. 내 머리와 내 손으로 합니다.</div>';
+  if(st.panel && (st.panel.lines||[]).length){
+    h+='<div class="panel">'+(st.panel.title?"<h4>"+esc(fill(st.panel.title))+"</h4>":"")
+      +'<div class="ln">'+st.panel.lines.map(x=>esc(fill(x))).join("<br>")+"</div></div>";
+  }
 
   let n=0;
   if(st.mats){
@@ -468,18 +478,23 @@ function renderStep(){
     h+="</div>";
   }
   if(st.prompts&&st.prompts.length){
-    h+='<div class="blockhead"><span class="n">'+(++n)+'</span>AI에게 이렇게 보내세요'
-      +(st.prompts.length>1?' <span style="font-weight:600;color:#b3590a">— 한 번에 하나씩</span>':"")+"</div>";
+    const allNoCopy=st.prompts.every(p=>p.noCopy);
+    h+='<div class="blockhead"><span class="n">'+(++n)+'</span>'
+      +(allNoCopy?"이렇게 하세요":"AI에게 이렇게 보내세요")
+      +((!allNoCopy&&st.prompts.length>1)?' <span style="font-weight:600;color:#b3590a">— 한 번에 하나씩</span>':"")+"</div>";
     st.prompts.forEach((p,pi)=>{
-      h+='<div class="promptbox"><div class="plabel">'+esc(p.label||"")+'</div><pre>'+esc(fill(p.text))+'</pre>'
-        +'<button class="copy" data-copy="'+pi+'">📋 복사하기</button></div>';
+      h+='<div class="promptbox"'+(p.noCopy?' style="border-color:#dfe4ec;background:#fafbfd"':"")
+        +'><div class="plabel"'+(p.noCopy?' style="color:#5b6675"':"")+'>'+esc(p.label||"")+'</div><pre>'+esc(fill(p.text))+'</pre>'
+        +(p.noCopy?"":'<button class="copy" data-copy="'+pi+'">📋 복사하기</button>')+"</div>";
     });
   }
   if(st.expect){
     h+='<details class="fold"><summary>이런 답이 오면 정상입니다 (예시 보기)</summary><div class="body"><div class="sample">'+esc(fill(st.expect))+"</div></div></details>";
   }
   if(st.troubles&&st.troubles.length){
-    h+='<details class="fold"><summary>이렇게 나왔다면? — 막혔을 때 보낼 문장</summary><div class="body">';
+    const openIt=(!st.prompts||!st.prompts.length||st.noai);
+    h+='<details class="fold"'+(openIt?" open":"")+'><summary>'
+      +(openIt?"이렇게 하면 됩니다":"이렇게 나왔다면? — 막혔을 때 보낼 문장")+'</summary><div class="body">';
     st.troubles.forEach((t,ti)=>{
       h+='<div class="trouble"><div class="when">😵 '+esc(t.when)+'</div><div class="fixbox">'+esc(fill(t.fix))+"</div>"
         +(t.noCopy?"":'<button class="copy" data-tcopy="'+ti+'">📋 이 문장 복사</button>')+"</div>";
@@ -488,7 +503,9 @@ function renderStep(){
   }
   if(st.record){
     h+='<div class="blockhead"><span class="n">'+(++n)+'</span>결과 기록하기</div>';
-    h+='<label class="fl">'+esc(fill(st.record.label))+"</label>";
+    const hasForm=(st.record.ph||"").indexOf("\n")>=0;
+    h+='<div class="reclabel"><label class="fl" style="margin:0">'+esc(fill(st.record.label))+"</label>"
+      +(hasForm?'<button class="fillform" id="fillBtn">✎ 양식·예시 넣기</button>':"")+"</div>";
     h+='<textarea id="recBox" placeholder="'+esc(fill(st.record.ph||""))+'" style="min-height:'+(st.record.big?"220px":"130px")+'">'+esc(S.rec[st.no]||"")+"</textarea>";
     h+='<div class="charcount" id="recCount"></div>';
   }
@@ -509,6 +526,15 @@ function renderStep(){
   });
   card.querySelectorAll("[data-copy]").forEach(b=>b.addEventListener("click",()=>copyText(fill(st.prompts[+b.dataset.copy].text),b)));
   card.querySelectorAll("[data-tcopy]").forEach(b=>b.addEventListener("click",()=>copyText(fill(st.troubles[+b.dataset.tcopy].fix),b)));
+  const fb=card.querySelector("#fillBtn");
+  if(fb) fb.addEventListener("click",()=>{
+    const box=card.querySelector("#recBox");
+    if(box.value.trim() && !confirm("이미 쓴 내용이 있습니다. 양식으로 바꿀까요?")) return;
+    box.value=fill(st.record.ph||"");
+    box.dispatchEvent(new Event("input",{bubbles:true}));
+    box.focus();
+    toast("예시는 지우고 내 내용으로 바꿔 쓰세요");
+  });
   const rb=card.querySelector("#recBox");
   if(rb){
     const cnt=card.querySelector("#recCount");
