@@ -488,7 +488,11 @@ function renderStep(){
     const allNoCopy=st.prompts.every(p=>p.noCopy);
     h+='<div class="blockhead"><span class="n">'+(++n)+'</span>'
       +(allNoCopy?"이렇게 하세요":"AI에게 이렇게 보내세요")
-      +((!allNoCopy&&st.prompts.length>1)?' <span style="font-weight:600;color:#b3590a">— 한 번에 하나씩</span>':"")+"</div>";
+      +((!allNoCopy&&st.prompts.length>1)
+        ? (st.pickOne
+            ? ' <span style="font-weight:600;color:#b3590a">— 둘 중 하나만 고르세요</span>'
+            : ' <span style="font-weight:600;color:#b3590a">— 한 번에 하나씩</span>')
+        : "")+"</div>";
     st.prompts.forEach((p,pi)=>{
       h+='<div class="promptbox"'+(p.noCopy?' style="border-color:#dfe4ec;background:#fafbfd"':"")
         +'><div class="plabel"'+(p.noCopy?' style="color:#5b6675"':"")+'>'+esc(p.label||"")+'</div><pre>'+esc(fill(p.text))+'</pre>'

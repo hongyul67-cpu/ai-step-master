@@ -385,7 +385,8 @@ function renderSteps(p){
     +'<div><label class="fl">표시 옵션</label>'
     +'<label class="flag"><input type="checkbox" id="fstar" '+(st.star?"checked":"")+'> 강조(★)</label>'
     +'<label class="flag"><input type="checkbox" id="fnoai" '+(st.noai?"checked":"")+'> AI 사용 안 함</label>'
-    +'<label class="flag"><input type="checkbox" id="fmats" '+(st.mats?"checked":"")+'> 재료 카드</label></div></div>'
+    +'<label class="flag"><input type="checkbox" id="fmats" '+(st.mats?"checked":"")+'> 재료 카드</label>'
+    +'<label class="flag"><input type="checkbox" id="fpick" '+(st.pickOne?"checked":"")+'> 프롬프트 중 하나만 고르기</label></div></div>'
     +fld("제목",st.title,"steps."+CUR+".title")
     +fld("왜 하는가 (학생에게 보이는 설명)",st.why,"steps."+CUR+".why","",70)+"</div>";
 
@@ -444,6 +445,7 @@ function renderSteps(p){
   bindChk("fstar",v=>{ if(v) M.steps[CUR].star=true; else delete M.steps[CUR].star; });
   bindChk("fnoai",v=>{ if(v) M.steps[CUR].noai=true; else delete M.steps[CUR].noai; });
   bindChk("fmats",v=>{ if(v) M.steps[CUR].mats=true; else delete M.steps[CUR].mats; });
+  bindChk("fpick",v=>{ if(v) M.steps[CUR].pickOne=true; else delete M.steps[CUR].pickOne; });
   bindChk("frec", v=>{ if(v) M.steps[CUR].record={label:"결과를 붙여넣으세요",ph:""}; else delete M.steps[CUR].record; });
   bindChk("fbig", v=>{ if(!M.steps[CUR].record) return; if(v) M.steps[CUR].record.big=true; else delete M.steps[CUR].record.big; });
 }

@@ -164,7 +164,8 @@ def build_workbook(m, path):
         if st.get("prompts"):
             all_nocopy = all(p.get("noCopy") for p in st["prompts"])
             t = "▶ 이렇게 하세요" if all_nocopy else "▶ AI에게 이렇게 보내세요"
-            if len(st["prompts"]) > 1 and not all_nocopy: t += "   (반드시 한 번에 하나씩)"
+            if len(st["prompts"]) > 1 and not all_nocopy:
+                t += "   (둘 중 하나만 고르세요)" if st.get("pickOne") else "   (반드시 한 번에 하나씩)"
             para(doc, t, size=10.5, bold=True, color="1F53C4", sb=4, sa=3)
             for p in st["prompts"]:
                 box(doc, [p.get("label", "")] + lbl(m, p["text"]).split("\n"),
