@@ -25,8 +25,8 @@ def R(label, ph="", big=False):
     return d
 
 # ---------- 모든 모듈이 공유하는 마지막 두 스텝 ----------
-def std_S13(extra_note=""):
-    return S("S13", 3, "AI 사용 기록표 쓰기",
+def std_S13(extra_note="", no="S13"):
+    return S(no, 3, "AI 사용 기록표 쓰기",
       "AI를 썼다는 사실은 숨기는 게 아니라 밝히는 것입니다. 이 수업의 약속이고, 평가의 근거가 됩니다." + (" " + extra_note if extra_note else ""),
       record=R("사용 기록을 채우세요",
                "· 사용한 AI:\n· 주고받은 횟수: 약    회\n· AI가 가장 도움이 된 부분:\n"
@@ -36,8 +36,8 @@ def std_S13(extra_note=""):
              "fail": "지난 모듈에 쓴 내용을 그대로 복사한다.",
              "fix": "이번 모듈에서 새로 한 일을 한 줄이라도 넣게 한다. 4단계 포트폴리오의 재료가 된다."})
 
-def std_S14(title, why, criteria, record_label, record_ph, checks, teach):
-    return S("S14", 3, title, why,
+def std_S14(title, why, criteria, record_label, record_ph, checks, teach, no="S14"):
+    return S(no, 3, title, why,
       prompts=[dict(P("짝과 바꿔 읽고 판정하기 (AI 없이)", criteria), noCopy=True)],
       record=R(record_label, record_ph, big=True),
       checks=checks, teach=teach)

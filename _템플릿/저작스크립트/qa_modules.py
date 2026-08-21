@@ -65,7 +65,7 @@ for m in MODS:
     got = [s["no"] for s in st]
     if got != want: add(c, "높음", "스텝 번호가 S1~S%d 순서가 아님: %s" % (len(st), got))
 
-    FULL = len(st) >= 10   # 14스텝 정규 모듈에만 적용하는 규칙들
+    FULL = len(st) >= 13   # 14스텝 정규 모듈에만 적용하는 규칙들
 
     # 2) 뼈대 규칙
     if not any(s.get("star") for s in st): add(c, "높음", "★ 강조 스텝이 없음")
