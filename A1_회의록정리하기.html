@@ -487,8 +487,9 @@ function renderStep(){
   }
   if(st.prompts&&st.prompts.length){
     const allNoCopy=st.prompts.every(p=>p.noCopy);
+    const headNoCopy=allNoCopy||!!st.prompts[0].noCopy;   /* 첫 상자가 활동이면 머리말도 활동으로 */
     h+='<div class="blockhead"><span class="n">'+(++n)+'</span>'
-      +(allNoCopy?"이렇게 하세요":"AI에게 이렇게 보내세요")
+      +(headNoCopy?"이렇게 하세요":"AI에게 이렇게 보내세요")
       +((!allNoCopy&&st.prompts.length>1)
         ? (st.pickOne
             ? ' <span style="font-weight:600;color:#b3590a">— 둘 중 하나만 고르세요</span>'
