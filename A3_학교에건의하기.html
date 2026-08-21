@@ -230,7 +230,7 @@ function keepStudent(){
 }
 function setModule(m){
   S={student:Object.assign({className:"",studentId:"",studentName:""}, keepStudent()),
-     mats:{}, rec:{}, chk:{}, idx:0, started:false, mode:"full"};
+     mats:{}, rec:{}, chk:{}, idx:0, started:false, mode:(m.defaultMode==="short"?"short":"full")};
   MOD=m; MATS=m.mats||[]; ALLSTEPS=m.steps||[];
   applyMode();
   LSKEY="stepRunner_"+(m.code||"MOD")+"_v1";
@@ -697,13 +697,18 @@ function showLib(){
   window.scrollTo({top:0,behavior:"smooth"});
 }
 function renderLib(){
+  const basics=LIB.filter(m=>m.basic).sort((a,b)=>a.basic-b.basic);
   const tracks=[["0","1단계 · 시작 전 약속 (10분)"],["A","A트랙 · 문서와 글쓰기"],["B","B트랙 · 발표"],["C","C트랙"],["D","D트랙"]];
   let h='<div class="card"><h2 class="sec">어떤 모듈을 할까요?</h2>'
       +'<p class="muted">이 파일 하나에 모든 모듈이 들어 있습니다. 고른 모듈부터 시작하면 되고, '
       +'하던 것이 있으면 이어서 진행됩니다.</p></div>';
   const used=[];
+  if(basics.length){
+    basics.forEach(m=>used.push(m));
+    h+='<div class="trackhd">기본 · 먼저 하는 '+basics.length+'가지</div><div class="libgrid">'+basics.map(cardHTML).join("")+"</div>";
+  }
   tracks.forEach(t=>{
-    const g=LIB.filter(m=>String(m.code||"").startsWith(t[0]));
+    const g=LIB.filter(m=>String(m.code||"").startsWith(t[0])&&used.indexOf(m)<0);
     if(!g.length) return;
     g.forEach(m=>used.push(m));
     h+='<div class="trackhd">'+esc(t[1])+'</div><div class="libgrid">'+g.map(cardHTML).join("")+"</div>";

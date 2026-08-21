@@ -421,13 +421,17 @@ TRACKS = [("0", "1단계 · 시작 전 약속 (10분)"),
 
 def build_index(mods):
     cards = ""
+    basics = sorted([m for m in mods if m.get("basic")], key=lambda x: x["basic"])
+    if basics:
+        cards += '\n    <h3 class="track">기본 · 먼저 하는 %d가지</h3>' % len(basics)
+        cards += _cards(basics)
     for letter, label in TRACKS:
-        group = [m for m in mods if m["code"].startswith(letter)]
+        group = [m for m in mods if m["code"].startswith(letter) and not m.get("basic")]
         if not group:
             continue
         cards += '\n    <h3 class="track">%s</h3>' % label
         cards += _cards(group)
-    rest = [m for m in mods if not any(m["code"].startswith(l) for l, _ in TRACKS)]
+    rest = [m for m in mods if not any(m["code"].startswith(l) for l, _ in TRACKS) and not m.get("basic")]
     if rest:
         cards += '\n    <h3 class="track">그 밖의 모듈</h3>' + _cards(rest)
     return _write_index(cards)
@@ -438,7 +442,7 @@ def _cards(mods):
         base = m["code"] + "_" + m["title"].replace(" ", "")
         cards += """
     <div class="mod">
-      <div class="mhead"><span class="code">%s</span><h3>%s</h3></div>
+      <div class="mhead"><span class="code">%s</span><h3>%s</h3>%s</div>
       <p class="mdesc">%s</p>
       <div class="links">
         <a class="go" href="%s.html">▶ 학생용 열기</a>
@@ -446,7 +450,9 @@ def _cards(mods):
         <a href="워드/%s_교사용_운영가이드.docx">📗 교사 가이드</a>
         <a href="modules/%s.json">{ } 모듈 원본</a>
       </div>
-    </div>""" % (m["code"], m["title"], m.get("desc", ""), base, m["code"], m["code"],
+    </div>""" % (m["code"], m["title"],
+                 ('<span class="basic">기본 %d</span>' % m["basic"]) if m.get("basic") else "",
+                 m.get("desc", ""), base, m["code"], m["code"],
                  os.path.splitext(os.path.basename(m["__file"]))[0])
     return cards
 
@@ -474,6 +480,7 @@ h2{font-size:16px;margin:26px 0 10px;letter-spacing:-.3px;}
 .mhead{display:flex;align-items:center;gap:9px;}
 .mhead .code{background:linear-gradient(135deg,var(--brand),#7aa2ff);color:#fff;font-weight:900;font-size:12px;padding:3px 9px;border-radius:7px;}
 .mhead h3{font-size:17px;margin:0;letter-spacing:-.3px;}
+.basic{font-size:11px;font-weight:800;background:#eaf7ec;color:#2c7a44;border:1px solid #bcdcc4;border-radius:20px;padding:2px 9px;margin-left:6px;}
 .mdesc{font-size:13.5px;color:var(--sub);margin:7px 0 12px;}
 .links{display:flex;flex-wrap:wrap;gap:7px;}
 .links a{font-size:12.5px;text-decoration:none;color:var(--sub);border:1px solid var(--line);background:#fbfcfe;border-radius:9px;padding:7px 11px;}

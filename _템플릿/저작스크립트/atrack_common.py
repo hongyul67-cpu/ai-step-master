@@ -38,7 +38,7 @@ def std_S13(extra_note=""):
 
 def std_S14(title, why, criteria, record_label, record_ph, checks, teach):
     return S("S14", 3, title, why,
-      prompts=[P("짝과 바꿔 읽고 판정하기 (AI 없이)", criteria)],
+      prompts=[dict(P("짝과 바꿔 읽고 판정하기 (AI 없이)", criteria), noCopy=True)],
       record=R(record_label, record_ph, big=True),
       checks=checks, teach=teach)
 

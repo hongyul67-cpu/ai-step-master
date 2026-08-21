@@ -833,5 +833,7 @@
     ]
    }
   }
- }
+ },
+ "basic": 2,
+ "defaultMode": "short"
 }
