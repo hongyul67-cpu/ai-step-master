@@ -124,9 +124,10 @@ for m in MODS:
     norec = [s["no"] for s in st if not s.get("record")]
     if FULL and len(norec) > 1: add(c, "보통", "기록 칸 없는 스텝이 둘 이상: %s" % ",".join(norec))
 
-    # 10) 1단계 자료 의존
-    if "1단계" in " ".join([s.get("why", "") for s in st]) + rules:
-        add(c, "운영", "‘1단계에서 정한 약속’을 전제로 함 — 1단계 자료가 아직 없음")
+    # 10) 1단계 자료 의존 (1단계 모듈이 실제로 있으면 문제 없음)
+    HAS_S1 = any(x.get("stage") == "1단계" for x in MODS)
+    if not HAS_S1 and "1단계" in " ".join([s.get("why", "") for s in st]) + rules:
+        add(c, "운영", "‘1단계에서 정한 약속’을 전제로 하는데 1단계 자료가 없음")
 
 print("=" * 78)
 tot = 0

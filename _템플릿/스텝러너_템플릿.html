@@ -234,7 +234,8 @@ function setModule(m){
   MOD=m; MATS=m.mats||[]; ALLSTEPS=m.steps||[];
   applyMode();
   LSKEY="stepRunner_"+(m.code||"MOD")+"_v1";
-  const headTxt=(m.stage? (m.code&&m.code!=="0" ? m.stage+" "+m.code+" · " : m.stage+" · ") : "")+m.title;
+  const noCode=(m.hideCode||m.code==="0");
+  const headTxt=(m.stage? (m.code&&!noCode ? m.stage+" "+m.code+" · " : m.stage+" · ") : "")+m.title;
   document.title=headTxt;
   document.getElementById("barDot").textContent=m.code||"··";
   document.getElementById("barTitle").textContent=headTxt;
@@ -347,7 +348,7 @@ function renderStart(){
   const it=MOD.intro||{};
   let h="";
   h+='<div class="card">';
-  h+='<span class="phase">'+esc((MOD.stage||"")+(MOD.code&&MOD.code!=="0"?" · 모듈 "+MOD.code:""))+"</span>";
+  h+='<span class="phase">'+esc((MOD.stage||"")+((MOD.code&&!(MOD.hideCode||MOD.code==="0"))?" · 모듈 "+MOD.code:""))+"</span>";
   h+='<h2 class="sec">'+esc(MOD.title||"")+"</h2>";
   h+='<p class="muted">'+esc(it.lead||MOD.desc||"")+"</p>";
   if(it.phases&&it.phases.length){
@@ -617,7 +618,7 @@ function buildForm(){
   tasks.push({id:"qchk",title:"확인 목록 점검 결과",guide:"각 스텝의 확인 목록 체크 현황입니다.",allowText:true,allowImage:false,allowLink:false});
   return {
     formatVersion:"1.0",
-    assignmentTitle:(MOD.stage?(MOD.code&&MOD.code!=="0"?MOD.stage+" "+MOD.code+" · ":MOD.stage+" · "):"")+MOD.title+(S.mode==="short"?" (짧은 코스)":""),
+    assignmentTitle:(MOD.stage?((MOD.code&&!(MOD.hideCode||MOD.code==="0"))?MOD.stage+" "+MOD.code+" · ":MOD.stage+" · "):"")+MOD.title+(S.mode==="short"?" (짧은 코스)":""),
     subject:MOD.subject||"", teacher:MOD.teacher||"", description:MOD.desc||"",
     studentFields:[
       {key:"className",label:"학반",placeholder:"예: 2학년 3반"},
@@ -702,7 +703,7 @@ function showLib(){
 }
 function renderLib(){
   const basics=LIB.filter(m=>m.basic).sort((a,b)=>a.basic-b.basic);
-  const tracks=[["0","1단계 · 시작 전 약속 (10분)"],["A","A트랙 · 문서와 글쓰기"],["B","B트랙 · 발표"],["C","C트랙"],["D","D트랙"]];
+  const tracks=[["0","1단계 · 시작 전 약속 (10분)"],["R","2단계 · AI 고르기와 프롬프트 기본기 (1차시)"],["A","A트랙 · 문서와 글쓰기"],["B","B트랙 · 발표"],["C","C트랙"],["D","D트랙"]];
   let h='<div class="card"><h2 class="sec">어떤 모듈을 할까요?</h2>'
       +'<p class="muted">이 파일 하나에 모든 모듈이 들어 있습니다. 고른 모듈부터 시작하면 되고, '
       +'하던 것이 있으면 이어서 진행됩니다.</p></div>';
