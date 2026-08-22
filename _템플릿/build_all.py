@@ -515,6 +515,7 @@ h2{font-size:16px;margin:26px 0 10px;letter-spacing:-.3px;}
   <a href="단계별AI수업_전체모음.html"><b>📚 전체 모음 (파일 하나)</b><span>모듈 전부가 들어 있는 단일 파일. USB 하나로 수업할 수 있고, 진행 상황이 모듈마다 표시됩니다.</span></a>
   <a href="워드/00_전체모듈_관리표.docx"><b>📋 전체 모듈 관리표</b><span>모듈 목록·차시·산출물·장치·평가 원칙·수업 전 점검표 한 장 정리</span></a>
   <a href="modules/_전체모듈.json"><b>{ } 모듈 묶음 파일</b><span>전체 모듈 원본을 한 파일로. 백업과 일괄 편집에 씁니다.</span></a>
+  <a href="제미나이_무료버전_수업가이드.html"><b>🟣 무료 제미나이로 수업하기</b><span>학생이 무료 Gemini를 쓸 때 어디가 다른지 · 수업 전 10분 점검 · 모듈별 대안</span></a>
 </div>
 
 <h2>교사용 도구</h2>
@@ -531,21 +532,29 @@ h2{font-size:16px;margin:26px 0 10px;letter-spacing:-.3px;}
     return p
 
 # ---------------- 실행 ----------------
-tpl = io.open(TPL, encoding="utf-8").read()
-mods = []
-for f in sorted(glob.glob(os.path.join(MODDIR, "*.json"))):
-    if os.path.basename(f).startswith("_"):   # 묶음 파일은 모듈이 아님
-        continue
-    m = json.load(io.open(f, encoding="utf-8")); m["__file"] = f
-    mods.append(m)
+def main():
+    tpl = io.open(TPL, encoding="utf-8").read()
+    mods = []
+    for f in sorted(glob.glob(os.path.join(MODDIR, "*.json"))):
+        if os.path.basename(f).startswith("_"):   # 묶음 파일은 모듈이 아님
+            continue
+        m = json.load(io.open(f, encoding="utf-8")); m["__file"] = f
+        mods.append(m)
 
-for m in mods:
-    base = m["code"] + "_" + m["title"].replace(" ", "")
-    print(build_html(m, os.path.join(ROOT, base + ".html"), tpl))
-    print(build_workbook(m, os.path.join(DOCDIR, m["code"] + "_학생용_워크북.docx")))
-    print(build_teacher(m, os.path.join(DOCDIR, m["code"] + "_교사용_운영가이드.docx")))
-b1, b2 = build_bundle(mods, tpl)
-print(b1); print(b2)
-print(build_admin(mods, os.path.join(DOCDIR, "00_전체모듈_관리표.docx")))
-print(build_editor(tpl))
-print(build_index(mods))
+    for m in mods:
+        base = m["code"] + "_" + m["title"].replace(" ", "")
+        print(build_html(m, os.path.join(ROOT, base + ".html"), tpl))
+        print(build_workbook(m, os.path.join(DOCDIR, m["code"] + "_학생용_워크북.docx")))
+        print(build_teacher(m, os.path.join(DOCDIR, m["code"] + "_교사용_운영가이드.docx")))
+    b1, b2 = build_bundle(mods, tpl)
+    print(b1); print(b2)
+    print(build_admin(mods, os.path.join(DOCDIR, "00_전체모듈_관리표.docx")))
+    print(build_editor(tpl))
+    print(build_index(mods))
+
+    import gemini_guide
+    print(gemini_guide.build_docx(os.path.join(DOCDIR, "00_무료제미나이_수업가이드.docx")))
+    print(gemini_guide.build_html(os.path.join(ROOT, "제미나이_무료버전_수업가이드.html")))
+
+if __name__ == "__main__":
+    main()
