@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>제출받는 법 — 드라이브로 걷고, 읽고, 정리하기</title>
+<style>
+:root{--ink:#1b2330;--sub:#5b6675;--dim:#8a93a3;--line:#e2e6ec;--bg:#f4f6fa;--brand:#2f6df0;--brand-d:#1f53c4;--paper:#fff;--soft:#eef3ff;--ok:#2c7a44;--warn:#b3590a;--bad:#c0392b;}
+*{box-sizing:border-box;}
+body{margin:0;font-family:"Apple SD Gothic Neo","Malgun Gothic","맑은 고딕",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.68;}
+.wrap{max-width:860px;margin:0 auto;padding:32px 18px 70px;}
+h1{font-size:25px;margin:0 0 6px;letter-spacing:-.5px;}
+p.lead{color:var(--sub);margin:0 0 24px;font-size:14px;}
+h2{font-size:18px;margin:34px 0 10px;letter-spacing:-.3px;padding-top:14px;border-top:1px solid var(--line);}
+h3{font-size:15px;margin:20px 0 7px;}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:12px 0;}
+ol,ul{margin:8px 0 8px 20px;padding:0;}
+li{margin:5px 0;font-size:14px;}
+code{background:#f1f4f9;border-radius:5px;padding:1px 6px;font-size:13px;}
+.tag{display:inline-block;font-size:11.5px;font-weight:800;border-radius:20px;padding:2px 10px;margin-right:6px;}
+.tag.rec{background:#eaf7ec;color:var(--ok);border:1px solid #bcdcc4;}
+.tag.no{background:#fdeaea;color:var(--bad);border:1px solid #f0c2c2;}
+.note{font-size:13px;background:#fff8e6;border:1px solid #f5dfa0;border-radius:11px;padding:12px 14px;margin:12px 0;}
+.warn{font-size:13px;background:#fdf2f2;border:1px solid #f0c8c8;border-radius:11px;padding:12px 14px;margin:12px 0;}
+.good{font-size:13px;background:#f0f9f2;border:1px solid #c5e3cd;border-radius:11px;padding:12px 14px;margin:12px 0;}
+table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13.5px;background:var(--paper);}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top;}
+th{background:#f7f9fd;font-size:13px;}
+.steps{counter-reset:s;}
+.steps .st{position:relative;padding-left:38px;margin:14px 0;}
+.steps .st:before{counter-increment:s;content:counter(s);position:absolute;left:0;top:1px;width:26px;height:26px;
+  background:var(--brand);color:#fff;border-radius:8px;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;}
+.steps .st b{display:block;font-size:14.5px;margin-bottom:2px;}
+.steps .st span{font-size:13.5px;color:var(--sub);}
+a.go{display:inline-block;background:var(--brand);color:#fff;text-decoration:none;font-weight:700;font-size:13.5px;border-radius:10px;padding:9px 15px;margin:6px 6px 0 0;}
+a.go.g{background:#fbfcfe;color:var(--ink);border:1px solid var(--line);}
+.copy{background:#f7f9fd;border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:13.5px;white-space:pre-wrap;margin:8px 0;}
+</style></head><body><div class="wrap">
+
+<h1>📥 제출받는 법</h1>
+<p class="lead">학생이 만든 <code>.json</code> 파일을 <b>어디로 걷고 · 무엇으로 읽는지</b> 정리했습니다.
+  학생 쪽은 바뀌는 것이 없습니다 — 지금처럼 「📤 제출 파일 저장」을 누르면 됩니다.</p>
+
+<div class="good"><b>먼저 결론</b><br>
+  걷는 곳은 <b>구글 설문지(파일 업로드 문항)</b>가 가장 안전합니다. 파일이 드라이브 폴더에 자동으로 쌓입니다.<br>
+  읽는 것은 <b>「제출 파일 읽기」 도구</b>에 파일을 통째로 끌어다 놓으면 됩니다.</div>
+
+<h2>1. 어디로 걷나 — 세 가지 방법</h2>
+
+<table>
+  <tr><th style="width:22%">방법</th><th>이런 점이 좋고 / 이런 점이 걸립니다</th></tr>
+  <tr>
+    <td><span class="tag rec">권장</span><b>구글 설문지<br>(파일 업로드 문항)</b></td>
+    <td>파일이 <b>내 드라이브 폴더에 자동으로 저장</b>되고, 누가 언제 냈는지 <b>시트에 한 줄씩</b> 남습니다.
+      학생은 폴더를 볼 수 없어 <b>남의 파일을 지우거나 볼 수 없습니다</b>.
+      <br><span style="color:var(--warn)">학생이 구글 계정으로 로그인해야 합니다(학교 계정이면 그대로 됩니다).</span></td>
+  </tr>
+  <tr>
+    <td><b>드라이브 폴더를<br>공유해서 올리게 하기</b></td>
+    <td>설정이 가장 빠릅니다. 다만 올릴 수 있게 하려면 <b>편집자 권한</b>을 줘야 하고,
+      그러면 <b>학생이 남의 파일을 열어 보거나 지울 수 있습니다.</b>
+      <span style="color:var(--bad)">학급 전체에 쓰기에는 권하지 않습니다.</span></td>
+  </tr>
+  <tr>
+    <td><b>구글 클래스룸<br>과제로 받기</b></td>
+    <td>클래스룸을 이미 쓰고 있다면 가장 편합니다. 제출·미제출이 자동으로 갈립니다.
+      받은 파일은 <b>한꺼번에 내려받아</b> 읽기 도구에 넣으면 됩니다.</td>
+  </tr>
+</table>
+
+<h2>2. 구글 설문지로 걷기 — 한 번만 만들면 계속 씁니다</h2>
+<div class="card steps">
+  <div class="st"><b>구글 설문지를 새로 만듭니다</b>
+    <span><code>forms.google.com</code> → 빈 양식. 제목은 <b>「AI 수업 과제 제출」</b> 정도면 됩니다.</span></div>
+  <div class="st"><b>질문을 네 개만 만듭니다</b>
+    <span>① 반 (단답형) ② 번호 (단답형) ③ 이름 (단답형) ④ <b>제출 파일 (파일 업로드)</b>
+      <br>①②③은 <b>필수</b>로 켜 두세요. 파일 이름만으로는 누구 것인지 헷갈립니다.</span></div>
+  <div class="st"><b>④를 「파일 업로드」로 바꿉니다</b>
+    <span>질문 유형에서 <b>파일 업로드</b>를 고르면 “응답자의 드라이브에서…” 안내가 뜹니다. <b>계속</b>을 누르세요.
+      <br>· 특정 파일 형식 → <b>사용 안 함</b>으로 두거나, 켤 거면 <b>문서</b>가 아니라 그대로 두는 편이 안전합니다(<code>.json</code>은 목록에 없습니다).
+      <br>· 최대 파일 수 <b>1</b>, 최대 크기 <b>1MB</b>면 충분합니다. 제출 파일은 보통 10~50KB입니다.</span></div>
+  <div class="st"><b>어느 모듈인지 구분되게 합니다</b>
+    <span>모듈마다 설문지를 따로 만들거나, ⑤번 질문으로 <b>「모듈 선택」(드롭다운)</b>을 하나 추가하세요.
+      <br>파일 안에도 모듈 이름이 들어 있어서, 읽기 도구에서 <b>모듈별로 걸러</b> 볼 수 있습니다.</span></div>
+  <div class="st"><b>학생에게 링크를 줍니다</b>
+    <span>보내기 → 🔗 링크 → <b>URL 단축</b>. 이 링크 하나면 학기 내내 씁니다.
+      <br>수업 화면에 띄워 두면 학생이 QR 없이도 주소창에 칠 수 있습니다.</span></div>
+  <div class="st"><b>받은 파일을 내려받습니다</b>
+    <span>설문지 → <b>응답</b> 탭에 시트가 만들어집니다. 파일은 내 드라이브의
+      <b>「(설문지 이름) (파일 응답)」</b> 폴더에 모입니다.
+      <br>그 폴더를 열어 <b>전체 선택 → 다운로드</b>하면 ZIP으로 받아집니다. 압축을 풀면 <code>.json</code> 파일들이 나옵니다.</span></div>
+</div>
+
+<div class="note"><b>파일 이름이 이미 정리되어 있습니다</b><br>
+  학생이 저장하면 파일 이름이 <code>3단계A7_2학년3반_7_홍길동.과제제출.json</code> 형태로 만들어집니다.
+  구글 설문지는 여기에 제출자 이름을 한 번 더 붙여 줍니다. 그래서 압축만 풀면 바로 읽힙니다.</div>
+
+<h2>3. 무엇으로 읽나</h2>
+
+<div class="card">
+  <h3>📥 제출 파일 읽기 <span style="font-size:12px;color:var(--dim)">— 전수 확인용</span></h3>
+  <p style="font-size:13.5px;color:var(--sub);margin:2px 0 10px">
+    압축 푼 <b>폴더째로 끌어다 놓으면</b> 반 전체가 한 화면에 뜹니다. 누가 덜 냈는지 바로 보입니다.</p>
+  <ul>
+    <li>학생을 눌러 <b>스텝별 답을 그대로</b> 읽습니다</li>
+    <li><b>나눠 준 틀 그대로</b> 낸 것은 노란색으로 표시됩니다 — 안 쓰고 낸 것이 걸러집니다</li>
+    <li><b>미제출자 찾기</b> — 명단을 붙여넣으면 안 낸 사람만 뽑아 줍니다</li>
+    <li><b>엑셀(CSV)로 내보내기</b> — 한 줄에 한 학생, 열에 스텝별 답</li>
+    <li><b>인쇄 · PDF</b> — 골라서 종이로</li>
+  </ul>
+  <a class="go" href="제출파일_읽기도구.html">제출 파일 읽기 열기</a>
+</div>
+
+<div class="card">
+  <h3>✅ 과제 채점·피드백 도구 <span style="font-size:12px;color:var(--dim)">— 한 명씩 채점할 때</span></h3>
+  <p style="font-size:13.5px;color:var(--sub);margin:2px 0 10px">
+    한 명씩 열어 <b>점수와 피드백을 적고 PDF로</b> 만들 수 있습니다. 수행평가에 씁니다.</p>
+  <a class="go g" href="https://hongyul67-cpu.github.io/ai-task-tools/과제채점_도구_교사용.html" target="_blank" rel="noopener">채점·피드백 도구 열기 ↗</a>
+</div>
+
+<div class="good"><b>둘 다 인터넷으로 파일을 보내지 않습니다.</b>
+  브라우저 안에서만 열립니다. 학생 이름이 든 파일이라 이 점이 중요합니다.</div>
+
+<h2>4. 파일을 받지 않고 걷는 방법도 있습니다</h2>
+<p style="font-size:14px">학생이 구글 계정이 없거나, 파일 올리는 것이 번거로우면
+  <b>「📋 제출 내용 복사」</b>를 눌러 <b>글로 붙여넣게</b> 하면 됩니다.</p>
+<div class="card">
+  <ol>
+    <li>구글 설문지에 <b>장문형 질문</b> 하나를 만듭니다 — 「제출 내용을 붙여넣으세요」</li>
+    <li>학생은 마무리 화면에서 <b>📋 제출 내용 복사</b> → 설문지에 <b>붙여넣기</b></li>
+    <li>응답 시트에 그대로 쌓입니다. 열에서 바로 읽고 정렬할 수 있습니다</li>
+  </ol>
+  <p style="font-size:13px;color:var(--sub);margin:6px 0 0">
+    다만 이 방식은 <b>읽기 도구로 못 엽니다</b>(파일이 아니라 글이라서요).
+    반 전체를 훑어볼 것이라면 파일 쪽이 낫습니다.</p>
+</div>
+
+<h2>5. 학생에게 그대로 읽어 줄 안내</h2>
+<div class="copy">과제를 다 하면 아래 순서로 냅니다.
+
+1. 마지막 화면에서 <b>「📤 제출 파일 저장 (.json)」</b>을 누릅니다.
+   → 내려받기 폴더에 파일이 하나 생깁니다. 이름은 건드리지 마세요.
+2. 선생님이 준 <b>제출 링크</b>를 엽니다.
+3. 반 · 번호 · 이름을 적고, 방금 받은 <b>파일을 올립니다</b>.
+4. 제출 후에도 그 화면은 그대로 두세요 — 다시 열면 이어서 할 수 있습니다.
+
+※ 파일이 안 보이면 「다운로드」 폴더를 찾아보세요.
+※ 휴대폰이면 「파일」 앱 → 다운로드에 있습니다.</div>
+
+<div class="warn"><b>한 가지만 주의</b><br>
+  제출 파일에는 <b>학생 이름과 반·번호가 들어 있습니다.</b>
+  단톡방이나 공개 폴더에 올리지 말고, 위 방법 중 하나로 받으세요.</div>
+
+<p style="margin-top:28px"><a class="go g" href="index.html">← 단계별 AI 수업으로</a></p>
+</div></body></html>

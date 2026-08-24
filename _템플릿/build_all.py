@@ -521,7 +521,9 @@ h2{font-size:16px;margin:26px 0 10px;letter-spacing:-.3px;}
 <h2>교사용 도구</h2>
 <div class="tool">
   <a href="모듈편집기.html"><b>🛠 모듈 편집기</b><span>프롬프트·스텝·체크리스트를 화면에서 고치고, 학생 배포용 파일을 만듭니다.</span></a>
-  <a href="https://hongyul67-cpu.github.io/ai-task-tools/과제채점_도구_교사용.html" target="_blank" rel="noopener"><b>✅ 과제 채점·피드백 도구</b><span>학생이 낸 .json을 열어 채점하고 피드백 PDF를 만듭니다.</span></a>
+  <a href="제출파일_읽기도구.html"><b>📥 제출 파일 읽기</b><span>반 전체가 낸 .json을 폴더째 끌어다 놓고 한 화면에서 봅니다 · 미제출자 찾기 · 엑셀 내보내기</span></a>
+  <a href="제출받는법_드라이브.html"><b>📤 제출받는 법 (드라이브)</b><span>구글 설문지 파일 업로드로 걷는 법 · 학생에게 읽어 줄 안내문</span></a>
+  <a href="https://hongyul67-cpu.github.io/ai-task-tools/과제채점_도구_교사용.html" target="_blank" rel="noopener"><b>✅ 과제 채점·피드백 도구</b><span>한 명씩 열어 점수와 피드백을 적고 PDF로 만듭니다.</span></a>
 </div>
 
 <div class="note"><b>학생에게 나눠 줄 것</b> — 각 모듈의 <b>‘학생용 열기’ 파일 하나</b>면 됩니다.

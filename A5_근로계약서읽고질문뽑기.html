@@ -652,7 +652,9 @@ function buildForm(){
   const tasks=[{id:"q0",title:"0. 재료 카드",guide:"과제를 만들기 위해 정리한 기본 정보입니다.",allowText:true,allowImage:false,allowLink:false}];
   STEPS.forEach(st=>{
     if(!st.record) return;
-    tasks.push({id:String(st.no).toLowerCase(),title:st.no+". "+st.title,guide:st.record.label,allowText:true,allowImage:true,allowLink:false});
+    tasks.push({id:String(st.no).toLowerCase(),title:st.no+". "+st.title,guide:st.record.label,
+                form:fill(st.record.ph||""),   /* 교사용 읽기도구가 '틀만 낸 것'을 가려내는 데 쓴다 */
+                allowText:true,allowImage:true,allowLink:false});
   });
   tasks.push({id:"qchk",title:"확인 목록 점검 결과",guide:"각 스텝의 확인 목록 체크 현황입니다.",allowText:true,allowImage:false,allowLink:false});
   return {

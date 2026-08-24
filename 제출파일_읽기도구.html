@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>제출 파일 읽기 — 교사용</title>
+<style>
+:root{--ink:#1b2330;--sub:#5b6675;--dim:#8a93a3;--line:#e2e6ec;--bg:#f4f6fa;--brand:#2f6df0;--brand-d:#1f53c4;--paper:#fff;--soft:#eef3ff;--ok:#2c7a44;--warn:#b3590a;--bad:#c0392b;}
+*{box-sizing:border-box;}
+body{margin:0;font-family:"Apple SD Gothic Neo","Malgun Gothic","맑은 고딕",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;}
+.top{background:var(--paper);border-bottom:1px solid var(--line);padding:12px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;position:sticky;top:0;z-index:30;}
+.top h1{font-size:17px;margin:0;letter-spacing:-.4px;}
+.top .sp{flex:1;}
+.btn{border:1px solid var(--line);background:#fbfcfe;color:var(--ink);border-radius:9px;padding:8px 13px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
+.btn:hover{background:#f2f5fa;}
+.btn.p{background:var(--brand);border-color:var(--brand);color:#fff;}
+.btn.p:hover{background:var(--brand-d);}
+.btn:disabled{opacity:.45;cursor:default;}
+.wrap{max-width:1400px;margin:0 auto;padding:18px;}
+/* 파일 받는 곳 */
+#drop{background:var(--paper);border:2.5px dashed #c3d2ea;border-radius:16px;padding:44px 24px;text-align:center;}
+#drop.on{border-color:var(--brand);background:var(--soft);}
+#drop h2{margin:0 0 8px;font-size:20px;letter-spacing:-.4px;}
+#drop p{margin:0 0 6px;color:var(--sub);font-size:14px;}
+#drop .hint{font-size:12.5px;color:var(--dim);margin-top:14px;}
+#drop .pick{margin-top:18px;}
+.privacy{margin-top:16px;font-size:12.5px;color:var(--ok);background:#f0f9f2;border:1px solid #c5e3cd;border-radius:10px;padding:10px 13px;display:inline-block;}
+/* 본문 2단 */
+.cols{display:grid;grid-template-columns:340px 1fr;gap:16px;align-items:start;}
+@media(max-width:940px){.cols{grid-template-columns:1fr;}}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:14px;}
+.panel .ph{padding:11px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.panel .ph b{font-size:13.5px;}
+.panel .pb{padding:10px 12px;}
+.filters{display:flex;gap:7px;flex-wrap:wrap;padding:9px 12px;border-bottom:1px solid var(--line);}
+.filters select,.filters input{border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:12.5px;font-family:inherit;background:#fff;color:var(--ink);}
+.filters input{flex:1;min-width:110px;}
+/* 명단 */
+ul.list{list-style:none;margin:0;padding:0;max-height:66vh;overflow:auto;}
+ul.list li{border-bottom:1px solid #f0f2f6;}
+ul.list button{width:100%;text-align:left;background:none;border:0;padding:10px 13px;cursor:pointer;font-family:inherit;display:flex;gap:9px;align-items:center;}
+ul.list button:hover{background:#f7f9fd;}
+ul.list li.cur button{background:var(--soft);box-shadow:inset 3px 0 0 var(--brand);}
+.who{flex:1;min-width:0;}
+.who b{font-size:14px;display:block;letter-spacing:-.2px;}
+.who span{font-size:11.5px;color:var(--dim);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pill{font-size:10.5px;font-weight:800;border-radius:20px;padding:2px 8px;white-space:nowrap;}
+.pill.ok{background:#eaf7ec;color:var(--ok);border:1px solid #bcdcc4;}
+.pill.part{background:#fff5e6;color:var(--warn);border:1px solid #f0d9ae;}
+.pill.work{background:#eef3ff;color:var(--brand-d);border:1px solid #c8d8f7;}
+.pill.dup{background:#fdeaea;color:var(--bad);border:1px solid #f0c2c2;}
+/* 답안 */
+.ans .head{padding:15px 18px;border-bottom:1px solid var(--line);}
+.ans .head h2{margin:0 0 3px;font-size:19px;letter-spacing:-.4px;}
+.ans .head .meta{font-size:13px;color:var(--sub);}
+.ans .body{padding:6px 18px 18px;max-height:70vh;overflow:auto;}
+.task{border-bottom:1px solid #f0f2f6;padding:14px 0;}
+.task:last-child{border-bottom:0;}
+.task .t{font-size:14px;font-weight:800;margin-bottom:2px;}
+.task .g{font-size:12px;color:var(--dim);margin-bottom:7px;}
+.task pre{white-space:pre-wrap;word-break:break-word;margin:0;font-family:inherit;font-size:13.5px;background:#fafbfd;border:1px solid #eef1f6;border-radius:9px;padding:11px 13px;}
+.task pre.empty{color:var(--bad);background:#fdf6f6;border-color:#f2d9d9;font-weight:700;}
+.task pre.form{color:var(--warn);background:#fffaf0;border-color:#f2e3c4;}
+.big{font-size:13px;color:var(--sub);padding:40px 10px;text-align:center;}
+.sum{display:flex;gap:8px;flex-wrap:wrap;padding:11px 14px;border-bottom:1px solid var(--line);background:#fbfcfe;}
+.sum div{font-size:12.5px;color:var(--sub);}
+.sum b{color:var(--ink);}
+/* 미제출 */
+#missBox{display:none;padding:12px 14px;border-top:1px solid var(--line);}
+#missBox textarea{width:100%;min-height:80px;border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-family:inherit;font-size:13px;resize:vertical;}
+#missOut{font-size:13px;margin-top:9px;}
+#missOut .m{color:var(--bad);font-weight:700;}
+@media print{
+  .top,.filters,#drop,.panel.side,#missBox,.sum{display:none!important;}
+  .cols{display:block;} .panel{border:0;} .ans .body{max-height:none;overflow:visible;}
+  .task{break-inside:avoid;}
+}
+</style></head><body>
+
+<div class="top">
+  <h1>📥 제출 파일 읽기 <span style="font-size:12px;color:var(--dim);font-weight:600">교사용</span></h1>
+  <span class="sp"></span>
+  <button class="btn" id="addBtn">＋ 파일 더 넣기</button>
+  <button class="btn" id="missBtn" disabled>🔎 미제출자 찾기</button>
+  <button class="btn" id="csvBtn" disabled>📊 엑셀(CSV)로 내보내기</button>
+  <button class="btn" id="printBtn" disabled>🖨️ 인쇄 · PDF</button>
+</div>
+
+<div class="wrap">
+  <div id="drop">
+    <h2>제출된 <code>.json</code> 파일을 여기에 끌어다 놓으세요</h2>
+    <p>여러 개를 한꺼번에 놓아도 되고, <b>폴더째로</b> 끌어다 놓아도 됩니다.</p>
+    <p>구글 드라이브에서 받은 파일을 압축 푼 폴더를 그대로 올리면 편합니다.</p>
+    <div class="pick"><button class="btn p" id="pickBtn">파일 고르기</button></div>
+    <div class="privacy">🔒 파일은 이 컴퓨터 안에서만 열립니다. 인터넷으로 나가지 않습니다.</div>
+    <p class="hint">학생 화면의 <b>「📤 제출 파일 저장 (.json)」</b>으로 만든 파일을 읽습니다.<br>
+      작업 중 저장한 <b>「.작업중.json」</b>도 읽을 수 있습니다(어디까지 했는지 확인용).</p>
+  </div>
+
+  <div class="cols" id="main" style="display:none">
+    <div class="panel side">
+      <div class="filters">
+        <select id="fMod"><option value="">모듈 전체</option></select>
+        <select id="fSort">
+          <option value="cls">반 · 번호순</option>
+          <option value="name">이름순</option>
+          <option value="fill">채운 양 적은 순</option>
+          <option value="file">파일 이름순</option>
+        </select>
+        <input id="fQ" type="search" placeholder="이름 · 반 · 내용 검색">
+      </div>
+      <div class="sum" id="sum"></div>
+      <ul class="list" id="list"></ul>
+      <div id="missBox">
+        <div style="font-size:12.5px;color:var(--sub);margin-bottom:6px">학생 명단을 붙여넣으세요 — 한 줄에 한 명 (예: <code>3 12 홍길동</code> 또는 <code>홍길동</code>)</div>
+        <textarea id="missIn" placeholder="2학년 3반 1 김민수&#10;2학년 3반 2 이서연&#10;…"></textarea>
+        <button class="btn p" id="missRun" style="margin-top:8px">대조하기</button>
+        <div id="missOut"></div>
+      </div>
+    </div>
+    <div class="panel ans" id="ans"><div class="big">왼쪽에서 학생을 고르세요.</div></div>
+  </div>
+</div>
+
+<input type="file" id="fileInput" accept=".json,application/json" multiple
+       style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
+<script>
+/* ══════════════════════════════════════════════════════════════
+   제출 파일 읽기 — 교사용
+   · 학생 화면(스텝러너)이 만든 .과제제출.json / .작업중.json 을 읽는다.
+   · 전부 브라우저 안에서 처리한다. 서버로 아무것도 보내지 않는다.
+   ══════════════════════════════════════════════════════════════ */
+"use strict";
+var ROWS=[];              /* 읽어들인 제출물 */
+var CUR=-1;
+
+function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(c){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+function el(id){ return document.getElementById(id); }
+
+/* ── 파일 읽기 ───────────────────────────────────────────── */
+function readFiles(files){
+  var arr=[].slice.call(files).filter(function(f){ return /\.json$/i.test(f.name); });
+  if(!arr.length){ alert(".json 파일이 없습니다.\n학생 화면에서 「📤 제출 파일 저장 (.json)」으로 만든 파일을 넣어 주세요."); return; }
+  var left=arr.length, bad=[];
+  arr.forEach(function(f){
+    var r=new FileReader();
+    r.onload=function(){
+      try{ ingest(JSON.parse(r.result), f.name); }
+      catch(e){ bad.push(f.name); }
+      if(--left===0) done();
+    };
+    r.onerror=function(){ bad.push(f.name); if(--left===0) done(); };
+    r.readAsText(f,"utf-8");
+  });
+  function done(){
+    markDuplicates();
+    render();
+    if(bad.length) alert("읽지 못한 파일 "+bad.length+"개\n\n"+bad.slice(0,8).join("\n")+
+      (bad.length>8?"\n…":"")+"\n\n제출 파일이 아니거나 내용이 깨진 파일입니다.");
+  }
+}
+
+/* 한 파일을 표 한 줄로 바꾼다 */
+function ingest(j, filename){
+  if(j && j.__submission && j.form && j.data){
+    var st=j.data.student||{}, ans=j.data.answers||{};
+    var tasks=(j.form.tasks||[]).map(function(t){
+      var a=ans[t.id]||{};
+      return { id:t.id, title:t.title, guide:t.guide, form:(t.form||""), text:(a.text||"") };
+    });
+    ROWS.push({
+      kind:"제출", file:filename,
+      mod:j.form.assignmentTitle||"(모듈 이름 없음)",
+      subject:j.form.subject||"", teacher:j.form.teacher||"",
+      cls:st.className||"", num:st.studentId||"", name:st.studentName||"(이름 없음)",
+      tasks:tasks
+    });
+    return;
+  }
+  if(j && j.__stepWork && j.state){
+    /* 작업중 파일 — 어디까지 했는지만 보여 준다 */
+    var s=j.state, sd=s.student||{}, rec=s.rec||{};
+    var ts=Object.keys(rec).map(function(k){
+      return { id:k.toLowerCase(), title:k, guide:"작업 중 저장본", text:rec[k]||"" };
+    });
+    ROWS.push({
+      kind:"작업중", file:filename,
+      mod:(j.code||"?")+" (작업 중 · 미제출)",
+      subject:"", teacher:"",
+      cls:sd.className||"", num:sd.studentId||"", name:sd.studentName||"(이름 없음)",
+      tasks:ts
+    });
+    return;
+  }
+  throw new Error("형식이 아님");
+}
+
+/* 같은 학생이 같은 모듈을 두 번 낸 경우 표시 */
+function markDuplicates(){
+  var seen={};
+  ROWS.forEach(function(r){
+    var k=r.mod+"|"+r.cls+"|"+r.num+"|"+r.name;
+    r.dup = !!seen[k]; seen[k]=true;
+  });
+}
+
+/* ── 판정 ───────────────────────────────────────────────── */
+function isEmpty(t){ return !String(t||"").trim(); }
+/* 나눠 준 '틀'을 그대로 두고 아무것도 안 쓴 것인지 가린다.
+   제출 파일에 틀 원문(form)이 들어 있으면 그것과 대조하고,
+   없는 옛 파일이면 '숫자·기호뿐인가'로 어림한다. */
+function norm(t){ return String(t||"").replace(/\s+/g," ").trim(); }
+function looksLikeForm(t, form){
+  var a=norm(t);
+  if(!a) return false;
+  if(form){
+    if(a===norm(form)) return true;                       /* 틀 그대로 */
+    /* 틀의 줄만 남기고 지운 뒤에도 남는 글자가 거의 없으면 안 쓴 것 */
+    var rest=a;
+    norm(form).split(" ").forEach(function(w){ if(w.length>1) rest=rest.split(w).join(" "); });
+    return rest.replace(/[0-9()\[\].,:|·…\-→○✕※\/\s]/g,"").length<4;
+  }
+  return a.replace(/[0-9()\[\].,:|·…\-→○✕※\/]/g,"").trim().length<6;
+}
+function filled(r){ return r.tasks.filter(function(t){ return !isEmpty(t.text) && !looksLikeForm(t.text,t.form); }).length; }
+function stateOf(r){
+  if(r.kind==="작업중") return {cls:"work", txt:"작업 중"};
+  var f=filled(r), n=r.tasks.length;
+  if(f>=n) return {cls:"ok", txt:"모두 작성 "+f+"/"+n};
+  if(f===0) return {cls:"part", txt:"비어 있음 0/"+n};
+  return {cls:"part", txt:f+"/"+n};
+}
+
+/* ── 화면 ───────────────────────────────────────────────── */
+function visible(){
+  var m=el("fMod").value, q=el("fQ").value.trim().toLowerCase();
+  var out=ROWS.filter(function(r){
+    if(m && r.mod!==m) return false;
+    if(!q) return true;
+    if((r.name+" "+r.cls+" "+r.num+" "+r.file).toLowerCase().indexOf(q)>=0) return true;
+    return r.tasks.some(function(t){ return (t.text||"").toLowerCase().indexOf(q)>=0; });
+  });
+  var s=el("fSort").value;
+  out.sort(function(a,b){
+    if(s==="name") return a.name.localeCompare(b.name,"ko");
+    if(s==="file") return a.file.localeCompare(b.file,"ko");
+    if(s==="fill") return filled(a)-filled(b);
+    var ca=(a.cls||"").localeCompare(b.cls||"","ko");
+    if(ca) return ca;
+    return (parseInt(a.num,10)||999)-(parseInt(b.num,10)||999);
+  });
+  return out;
+}
+function render(){
+  if(!ROWS.length) return;
+  el("drop").style.display="none";
+  el("main").style.display="";
+  ["csvBtn","printBtn","missBtn"].forEach(function(id){ el(id).disabled=false; });
+
+  var mods={}; ROWS.forEach(function(r){ mods[r.mod]=(mods[r.mod]||0)+1; });
+  var sel=el("fMod"), keep=sel.value;
+  sel.innerHTML='<option value="">모듈 전체 ('+ROWS.length+'개)</option>'+
+    Object.keys(mods).sort().map(function(m){
+      return '<option value="'+esc(m)+'">'+esc(m)+' ('+mods[m]+')</option>'; }).join("");
+  sel.value=keep;
+
+  var vis=visible();
+  var full=vis.filter(function(r){ return stateOf(r).cls==="ok"; }).length;
+  var work=vis.filter(function(r){ return r.kind==="작업중"; }).length;
+  var dup =vis.filter(function(r){ return r.dup; }).length;
+  el("sum").innerHTML='<div>읽은 파일 <b>'+vis.length+'</b>개</div>'
+    +'<div>모두 작성 <b>'+full+'</b></div>'
+    +'<div>덜 쓴 것 <b>'+(vis.length-full-work)+'</b></div>'
+    +(work?'<div>작업 중 <b>'+work+'</b></div>':'')
+    +(dup?'<div style="color:var(--bad)">중복 제출 <b>'+dup+'</b></div>':'');
+
+  el("list").innerHTML=vis.map(function(r,i){
+    var s=stateOf(r);
+    return '<li'+(ROWS.indexOf(r)===CUR?' class="cur"':'')+'><button data-i="'+ROWS.indexOf(r)+'">'
+      +'<span class="who"><b>'+esc(r.name)+'</b>'
+      +'<span>'+esc((r.cls||"")+" "+(r.num?r.num+"번":""))+' · '+esc(r.mod)+'</span></span>'
+      +'<span class="pill '+s.cls+'">'+esc(s.txt)+'</span>'
+      +(r.dup?'<span class="pill dup">중복</span>':'')
+      +'</button></li>';
+  }).join("") || '<li><div class="big">조건에 맞는 제출물이 없습니다.</div></li>';
+
+  if(CUR>=0 && vis.indexOf(ROWS[CUR])<0) CUR=-1;
+  if(CUR<0 && vis.length) CUR=ROWS.indexOf(vis[0]);
+  showAnswer();
+}
+function showAnswer(){
+  var box=el("ans");
+  if(CUR<0){ box.innerHTML='<div class="big">왼쪽에서 학생을 고르세요.</div>'; return; }
+  var r=ROWS[CUR], s=stateOf(r);
+  var h='<div class="head"><h2>'+esc(r.name)+' <span style="font-size:14px;color:var(--sub);font-weight:600">'
+    +esc((r.cls||"")+" "+(r.num?r.num+"번":""))+'</span></h2>'
+    +'<div class="meta">'+esc(r.mod)+(r.subject?' · '+esc(r.subject):'')
+    +' <span class="pill '+s.cls+'" style="margin-left:6px">'+esc(s.txt)+'</span>'
+    +(r.dup?' <span class="pill dup">중복 제출</span>':'')
+    +'<br><span style="font-size:11.5px;color:var(--dim)">'+esc(r.file)+'</span></div></div><div class="body">';
+  r.tasks.forEach(function(t){
+    var cls="", txt=t.text;
+    if(isEmpty(txt)){ cls=" empty"; txt="(비어 있음 — 작성하지 않았습니다)"; }
+    else if(looksLikeForm(txt,t.form)){ cls=" form"; txt=t.text+"\n\n▲ 나눠 준 틀 그대로입니다 — 내용을 쓰지 않았습니다."; }
+    h+='<div class="task"><div class="t">'+esc(t.title)+'</div>'
+      +(t.guide?'<div class="g">'+esc(t.guide)+'</div>':'')
+      +'<pre class="'+cls.trim()+'">'+esc(txt)+'</pre></div>';
+  });
+  h+='</div>';
+  box.innerHTML=h;
+}
+
+/* ── 엑셀(CSV) ──────────────────────────────────────────── */
+function toCSV(){
+  var vis=visible();
+  if(!vis.length){ alert("내보낼 것이 없습니다."); return; }
+  /* 열 = 모든 제출물의 과제 제목을 합친 것 */
+  var cols=[], seen={};
+  vis.forEach(function(r){ r.tasks.forEach(function(t){
+    if(!seen[t.title]){ seen[t.title]=1; cols.push(t.title); } }); });
+  var head=["모듈","반","번호","이름","상태","채운 항목","전체 항목","파일 이름"].concat(cols);
+  var lines=[head];
+  vis.forEach(function(r){
+    var m={}; r.tasks.forEach(function(t){ m[t.title]=t.text||""; });
+    var s=stateOf(r);
+    lines.push([r.mod,r.cls,r.num,r.name,s.txt,filled(r),r.tasks.length,r.file]
+      .concat(cols.map(function(c){ return m[c]===undefined?"":m[c]; })));
+  });
+  var csv=lines.map(function(row){
+    return row.map(function(v){ return '"'+String(v==null?"":v).replace(/"/g,'""')+'"'; }).join(",");
+  }).join("\r\n");
+  var blob=new Blob(["﻿"+csv],{type:"text/csv;charset=utf-8;"});   /* BOM — 엑셀 한글 깨짐 방지 */
+  var a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="제출결과_"+new Date().toISOString().slice(0,10)+".csv";
+  a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); },1500);
+}
+
+/* ── 미제출자 찾기 ──────────────────────────────────────── */
+function runMissing(){
+  var lines=el("missIn").value.split("\n").map(function(x){ return x.trim(); }).filter(Boolean);
+  if(!lines.length){ el("missOut").innerHTML='<span style="color:var(--dim)">명단을 붙여넣으세요.</span>'; return; }
+  var vis=visible();
+  var got=vis.map(function(r){ return (r.name||"").replace(/\s+/g,""); });
+  var miss=[], ok=0;
+  lines.forEach(function(L){
+    /* 줄에서 이름만 뽑는다 — 마지막 한글 덩어리 */
+    var m=L.match(/[가-힣]{2,4}(?!.*[가-힣]{2,4})/);
+    var nm=(m?m[0]:L).replace(/\s+/g,"");
+    if(got.indexOf(nm)>=0) ok++; else miss.push(nm);
+  });
+  el("missOut").innerHTML='명단 <b>'+lines.length+'</b>명 중 제출 <b>'+ok+'</b>명 · '
+    +'미제출 <b class="m">'+miss.length+'</b>명'
+    +(miss.length?'<div style="margin-top:6px;font-size:13px">'+esc(miss.join(", "))+'</div>':'');
+}
+
+/* ── 붙이기 ─────────────────────────────────────────────── */
+var dz=el("drop");
+["dragenter","dragover"].forEach(function(ev){
+  document.addEventListener(ev,function(e){ e.preventDefault(); dz.classList.add("on"); }); });
+["dragleave","drop"].forEach(function(ev){
+  document.addEventListener(ev,function(e){ e.preventDefault(); if(ev==="drop"||e.target===dz) dz.classList.remove("on"); }); });
+document.addEventListener("drop",function(e){
+  e.preventDefault();
+  var dt=e.dataTransfer; if(!dt) return;
+  /* 폴더째 끌어다 놓은 경우를 위해 하위 폴더까지 훑는다.
+     훑기가 안 되는 브라우저이거나 아무것도 못 건지면 평범한 파일 목록으로 되돌아간다. */
+  var plain=dt.files ? [].slice.call(dt.files) : [];
+  if(dt.items && dt.items.length && dt.items[0].webkitGetAsEntry){
+    var out=[], pend=1, fin=false;
+    function finish(){
+      if(fin) return; fin=true;
+      readFiles(out.length ? out : plain);
+    }
+    function walk(entry){
+      if(!entry) return;
+      if(entry.isFile){ pend++; entry.file(function(f){ out.push(f); if(!--pend) finish(); },
+                                           function(){ if(!--pend) finish(); }); }
+      else if(entry.isDirectory){ pend++; entry.createReader().readEntries(function(es){
+        es.forEach(walk); if(!--pend) finish(); }, function(){ if(!--pend) finish(); }); }
+    }
+    [].slice.call(dt.items).forEach(function(it){
+      try{ walk(it.webkitGetAsEntry()); }catch(e){}
+    });
+    if(!--pend) finish();
+  } else readFiles(plain);
+});
+el("pickBtn").onclick=el("addBtn").onclick=function(){ el("fileInput").click(); };
+el("fileInput").onchange=function(e){
+  var fs=[].slice.call(e.target.files);
+  e.target.value="";                 /* 같은 파일을 다시 골라도 다시 읽히게 */
+  readFiles(fs);
+};
+el("list").addEventListener("click",function(e){
+  var b=e.target.closest("[data-i]"); if(!b) return;
+  CUR=+b.dataset.i; render();
+});
+["fMod","fSort"].forEach(function(id){ el(id).onchange=render; });
+el("fQ").oninput=render;
+el("csvBtn").onclick=toCSV;
+el("printBtn").onclick=function(){ window.print(); };
+el("missBtn").onclick=function(){
+  var b=el("missBox"); b.style.display=(b.style.display==="block")?"none":"block";
+};
+el("missRun").onclick=runMissing;
+</script>
+</body></html>
