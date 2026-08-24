@@ -301,7 +301,7 @@ td:first-child{font-weight:700;}
 <div class="card"><b>공식 문서로 확인한 것</b><ul>%(conf)s</ul></div>
 <div class="card warn"><b>확인하지 못한 것 — 직접 보셔야 합니다</b><ul>%(unconf)s</ul></div>
 <div class="card"><b>참고한 문서</b><ul>%(links)s</ul></div>
-</div></body></html>""" % dict(
+</div><script src="https://hongyul67-cpu.github.io/links/backbar.js"></script></body></html>""" % dict(
         title=TITLE, sub=SUB, confirmed=CONFIRMED,
         why=ul(WHY), checkintro=CHECK_INTRO, check=check, fixed=fixed,
         save=ul(SAVE), mods=mods, say=say, priv=ul(PRIV), read=ul(READ),
