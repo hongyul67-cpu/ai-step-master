@@ -480,13 +480,21 @@ function renderStart(){
 }
 
 /* ===================== 진행 ===================== */
+/* 스텝 지도에 '완료' 표시를 할지 — 체크까지 다 한 상태 */
 function stepDone(i){
   const st=STEPS[i];
   const need=(st.checks||[]).length;
   const got=((S.chk[st.no]||[]).filter(Boolean)).length;
+  return got>=need && stepReady(i);
+}
+/* 다음으로 넘어가도 되는지 — 실제 산출물(재료·기록)만 본다.
+   확인 목록은 스스로 점검하는 칸이지 통과 조건이 아니다.
+   (AI가 어떻게 답했는지에 달린 항목이 섞여 있어, 체크로 막으면 정직하게 못 넘어간다) */
+function stepReady(i){
+  const st=STEPS[i];
   const recOk=st.record?((S.rec[st.no]||"").trim().length>0):true;
   const matOk=st.mats?MATS.every(m=>(S.mats[m.k]||"").trim()):true;
-  return got>=need && recOk && matOk;
+  return recOk && matOk;
 }
 function startRun(){
   ["className","studentId","studentName"].forEach(k=>{ const el=document.getElementById("s_"+k); if(el) S.student[k]=el.value.trim(); });
@@ -511,16 +519,19 @@ function go(i){
 function prevStep(){ if(S.idx===0){ toast("첫 스텝입니다."); return; } go(S.idx-1); }
 function nextStep(){
   const btn=document.getElementById("nextBtn"), warn=document.getElementById("stepWarn");
-  if(!stepDone(S.idx) && !btn.dataset.forced){
-    const st=STEPS[S.idx];
+  const st=STEPS[S.idx];
+  if(!stepReady(S.idx) && !btn.dataset.forced){
     let msg="아직 남았습니다 — ";
     if(st.mats && !MATS.every(m=>(S.mats[m.k]||"").trim())) msg+="재료 칸을 모두 채우세요.";
-    else if(st.record && !(S.rec[st.no]||"").trim()) msg+="결과 기록 칸이 비어 있습니다.";
-    else msg+="확인 목록에 체크하세요.";
+    else msg+="결과 기록 칸이 비어 있습니다. (붙여넣을 것이 없으면 무엇을 했는지 한 줄이라도 적으세요)";
     warn.textContent=msg;
     btn.dataset.forced="1"; btn.textContent="그래도 다음으로 →";
     return;
   }
+  /* 확인 목록은 통과 조건이 아니다 — 비어 있으면 알려만 주고 넘어간다 */
+  const need=(st.checks||[]).length;
+  const got=((S.chk[st.no]||[]).filter(Boolean)).length;
+  if(need && got<need) toast("확인 목록 "+(need-got)+"개가 비어 있습니다 — 그대로 넘어갑니다");
   go(S.idx+1);
 }
 function showDone(){
@@ -589,7 +600,7 @@ function renderStep(){
     });
   }
   if(st.expect){
-    h+='<details class="fold"><summary>이런 답이 오면 정상입니다 (예시 보기)</summary><div class="body"><div class="sample">'+esc(fill(st.expect))+"</div></div></details>";
+    h+='<details class="fold"><summary>이런 답이 오면 정상입니다 — 실제로 받아 본 답 보기</summary><div class="body"><div class="sample">'+esc(fill(st.expect))+"</div></div></details>";
   }
   if(st.troubles&&st.troubles.length){
     const openIt=(!st.prompts||!st.prompts.length||st.noai);
@@ -605,12 +616,21 @@ function renderStep(){
     h+='<div class="blockhead"><span class="n">'+(++n)+'</span>결과 기록하기</div>';
     const hasForm=(st.record.ph||"").indexOf("\n")>=0;
     h+='<div class="reclabel"><label class="fl" style="margin:0">'+esc(fill(st.record.label))+"</label>"
-      +(hasForm?'<button class="fillform" id="fillBtn">✎ 양식·예시 넣기</button>':"")+"</div>";
+      +(hasForm?'<button class="fillform" id="fillBtn">✎ 빈 양식 넣기</button>':"")
+      +(st.record.sample?'<button class="fillform" id="sampleBtn">👀 채운 예시</button>':"")+"</div>";
+    if(st.record.sample){
+      h+='<details class="fold" id="sampleFold"><summary>채운 예시 — 다른 학생이 이렇게 적었습니다</summary>'
+        +'<div class="body"><div class="sample">'+esc(fill(st.record.sample))+'</div>'
+        +'<p style="margin:9px 2px 0;font-size:12.5px;color:#b3590a;font-weight:700">'
+        +'이 예시는 다른 주제입니다. 그대로 옮겨 적지 말고, 내 활동으로 바꿔 쓰세요.</p></div></details>';
+    }
     h+='<textarea id="recBox" placeholder="'+esc(fill(st.record.ph||""))+'" style="min-height:'+(st.record.big?"220px":"130px")+'">'+esc(S.rec[st.no]||"")+"</textarea>";
     h+='<div class="charcount" id="recCount"></div>';
   }
   if(st.checks&&st.checks.length){
-    h+='<div class="blockhead"><span class="n">✔</span>넘어가기 전 확인</div><ul class="checks">';
+    h+='<div class="blockhead"><span class="n">✔</span>스스로 점검'
+      +' <span style="font-weight:600;color:#7a8699;font-size:12.5px">— 체크하지 않아도 다음으로 넘어갑니다. 해당 없으면 비워 두세요</span></div>'
+      +'<ul class="checks">';
     st.checks.forEach((c,ci)=>{
       const on=(S.chk[st.no]||[])[ci];
       h+='<li><label class="'+(on?"on":"")+'"><input type="checkbox" data-chk="'+ci+'"'+(on?" checked":"")+"> <span>"+esc(fill(c))+"</span></label></li>";
@@ -633,7 +653,12 @@ function renderStep(){
     box.value=fill(st.record.ph||"");
     box.dispatchEvent(new Event("input",{bubbles:true}));
     box.focus();
-    toast("예시는 지우고 내 내용으로 바꿔 쓰세요");
+    toast("빈 양식을 넣었습니다 — 칸을 내 내용으로 채우세요");
+  });
+  const sb2=card.querySelector("#sampleBtn");
+  if(sb2) sb2.addEventListener("click",()=>{
+    const f=card.querySelector("#sampleFold");
+    if(f){ f.open=!f.open; if(f.open) f.scrollIntoView({behavior:"smooth",block:"nearest"}); }
   });
   const rb=card.querySelector("#recBox");
   if(rb){
