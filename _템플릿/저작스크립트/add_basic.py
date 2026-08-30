@@ -67,9 +67,9 @@ patch(os.path.join(REPO, "_템플릿", "스텝러너_템플릿.html"), [
  ("""     mats:{}, rec:{}, chk:{}, idx:0, started:false, mode:"full"};""",
   """     mats:{}, rec:{}, chk:{}, idx:0, started:false, mode:(m.defaultMode==="short"?"short":"full")};""",
   "기본 코스 적용"),
- ("""  const tracks=[["0","1단계 · 시작 전 약속 (10분)"],["A","A트랙 · 문서와 글쓰기"],["B","B트랙 · 발표"],["C","C트랙"],["D","D트랙"]];""",
+ ("""  const tracks=[["0","1단계 · 시작 전 약속 (10~15분)"],["A","A트랙 · 문서와 글쓰기"],["B","B트랙 · 발표"],["C","C트랙"],["D","D트랙"]];""",
   """  const basics=LIB.filter(m=>m.basic).sort((a,b)=>a.basic-b.basic);
-  const tracks=[["0","1단계 · 시작 전 약속 (10분)"],["A","A트랙 · 문서와 글쓰기"],["B","B트랙 · 발표"],["C","C트랙"],["D","D트랙"]];""",
+  const tracks=[["0","1단계 · 시작 전 약속 (10~15분)"],["A","A트랙 · 문서와 글쓰기"],["B","B트랙 · 발표"],["C","C트랙"],["D","D트랙"]];""",
   "모음 화면 기본 묶음 준비"),
  ("""  const used=[];
   tracks.forEach(t=>{

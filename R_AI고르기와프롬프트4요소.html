@@ -372,8 +372,8 @@ function renderStart(){
   }
   if(MOD.short&&MOD.short.steps&&MOD.short.steps.length){
     h+='<div class="card"><h3 class="sub" style="margin-top:0">⏱️ 오늘 얼마나 할까요?</h3><div class="modepick">'
-      +'<button class="modebtn'+(S.mode==="short"?" on":"")+'" data-mode="short"><b>짧게 · 1차시</b>'
-      +'<span>'+MOD.short.steps.length+'스텝만 합니다. 결과물까지 나오고, 뼈대 고치기·부분 수정·짝 비교는 건너뜁니다.</span></button>'
+      +'<button class="modebtn'+(S.mode==="short"?" on":"")+'" data-mode="short"><b>짧게 · 한 차시</b>'
+      +'<span>'+ALLSTEPS.length+'스텝 중 '+MOD.short.steps.length+'스텝만 골라서 합니다. 결과물까지 나오지만, 고쳐 쓰기·짝 점검 스텝은 건너뜁니다.</span></button>'
       +'<button class="modebtn'+(S.mode!=="short"?" on":"")+'" data-mode="full"><b>전체 · 3차시</b>'
       +'<span>'+ALLSTEPS.length+'스텝을 모두 합니다. 고치는 연습과 상대 입장에서 점검까지 들어갑니다.</span></button>'
       +'</div></div>';
@@ -744,7 +744,7 @@ function showLib(){
 }
 function renderLib(){
   const basics=LIB.filter(m=>m.basic).sort((a,b)=>a.basic-b.basic);
-  const tracks=[["0","1단계 · 시작 전 약속 (10분)"],["R","2단계 · AI 고르기와 프롬프트 기본기 (1차시)"],["A","A트랙 · 문서와 글쓰기"],["B","B트랙 · 발표"],["C","C트랙 · 만들기"],["D","D트랙 · 조사와 자료"],["P","4단계 · 각자 주제로 (마무리)"]];
+  const tracks=[["0","1단계 · 시작 전 약속 (10~15분)"],["R","2단계 · AI 고르기와 프롬프트 기본기 (1차시)"],["A","A트랙 · 문서와 글쓰기"],["B","B트랙 · 발표"],["C","C트랙 · 만들기"],["D","D트랙 · 조사와 자료"],["P","4단계 · 각자 주제로 (마무리)"]];
   let h='<div class="card"><h2 class="sec">어떤 모듈을 할까요?</h2>'
       +'<p class="muted">이 파일 하나에 모든 모듈이 들어 있습니다. 고른 모듈부터 시작하면 되고, '
       +'하던 것이 있으면 이어서 진행됩니다.</p></div>';
