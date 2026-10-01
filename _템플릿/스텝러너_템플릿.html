@@ -67,6 +67,11 @@ label.fl{display:block;font-size:12.5px;font-weight:700;color:var(--sub);margin:
 .fold[open]>summary::before{content:"▾ ";}
 .fold .body{padding:12px 13px;border-top:1px solid var(--line);font-size:13.5px;color:#3c4756;}
 .panel{border:1.5px solid #c9d6ec;background:#fbfcff;border-radius:12px;padding:13px 15px;margin:0 0 14px;}
+.sfig{margin:0 0 16px;}
+.sfig figure.fig{margin-bottom:10px;}
+.sfig figure.fig:last-child{margin-bottom:0;}
+.sfig .hint{font-size:11.5px;color:#8a94a6;text-align:center;margin-top:4px;}
+@media print{.sfig .hint{display:none;}}
 .panel h4{margin:0 0 8px;font-size:14px;letter-spacing:-.2px;color:var(--ink);}
 .panel .ln{font-size:14.5px;line-height:1.9;color:#2c3a52;}
 .fillform{border:1px solid var(--line);background:#fff;color:var(--sub);border-radius:8px;padding:5px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;margin-left:6px;}
@@ -217,6 +222,13 @@ label.fl{display:block;font-size:12.5px;font-weight:700;color:var(--sub);margin:
 <!-- 모듈 데이터가 이 자리에 들어갑니다 (모듈 편집기가 채워 넣습니다) -->
 <script id="moduleData" type="application/json">null</script>
 
+<!-- 그림(배우기 그림 · figs.js). 공용 도우미는 links 것을 부른다(사본 금지).
+     이 파일만 따로 내려받아 열어도 그림이 나오게, 옆에 figs.js 가 없으면 배포 주소에서 가져온다.
+     인터넷이 없으면 그림만 빠지고 글은 그대로 나온다. -->
+<script src="https://hongyul67-cpu.github.io/links/fig.js"></script>
+<script src="figs.js"></script>
+<script>if(!window.FIGS){document.write('<scr'+'ipt src="https://hongyul67-cpu.github.io/ai-step-master/figs.js"></scr'+'ipt>');}</script>
+
 <script>
 /* ===================== 상태 ===================== */
 const CAN_SAVE=(function(){ try{ localStorage.setItem("__t","1"); localStorage.removeItem("__t"); return true; }catch(e){ return false; } })();
@@ -355,6 +367,7 @@ function renderStart(){
     h+='<div class="flow">'+it.phases.map(p=>"<span>"+esc(p)+"</span>").join("")+"</div>";
   }
   h+="</div>";
+  if(it.fig){ const fh=figHTML(it.fig); if(fh) h+='<div class="card"><h3 class="sub" style="margin-top:0">🗺️ 그림으로 먼저 보기</h3>'+fh+"</div>"; }
   if(it.outcomeItems&&it.outcomeItems.length){
     h+='<div class="card"><h3 class="sub" style="margin-top:0">📄 오늘 끝나면 이런 게 나옵니다</h3>';
     h+='<div class="preview"><h4>'+esc(it.outcomeTitle||"")+"</h4><ol>"
@@ -372,8 +385,8 @@ function renderStart(){
   }
   if(MOD.short&&MOD.short.steps&&MOD.short.steps.length){
     h+='<div class="card"><h3 class="sub" style="margin-top:0">⏱️ 오늘 얼마나 할까요?</h3><div class="modepick">'
-      +'<button class="modebtn'+(S.mode==="short"?" on":"")+'" data-mode="short"><b>짧게 · 1차시</b>'
-      +'<span>'+MOD.short.steps.length+'스텝만 합니다. 결과물까지 나오고, 뼈대 고치기·부분 수정·짝 비교는 건너뜁니다.</span></button>'
+      +'<button class="modebtn'+(S.mode==="short"?" on":"")+'" data-mode="short"><b>짧게 · 한 차시</b>'
+      +'<span>'+ALLSTEPS.length+'스텝 중 '+MOD.short.steps.length+'스텝만 골라서 합니다. 결과물까지 나오지만, 고쳐 쓰기·짝 점검 스텝은 건너뜁니다.</span></button>'
       +'<button class="modebtn'+(S.mode!=="short"?" on":"")+'" data-mode="full"><b>전체 · 3차시</b>'
       +'<span>'+ALLSTEPS.length+'스텝을 모두 합니다. 고치는 연습과 상대 입장에서 점검까지 들어갑니다.</span></button>'
       +'</div></div>';
@@ -476,6 +489,13 @@ function showDone(){
 }
 
 /* ===================== 렌더 ===================== */
+/* 그림 — 스텝의 fig(키 하나 또는 여러 개)를 figs.js 에서 찾아 그린다. 못 불러왔으면 아무것도 안 나온다 */
+function figHTML(f){
+  if(!f || !window.FIG || !FIG.has) return "";
+  const keys=(Array.isArray(f)?f:[f]).filter(k=>FIG.has(k));
+  if(!keys.length) return "";
+  return '<div class="sfig">'+keys.map(k=>FIG.figure(k)).join("")+'<div class="hint">🔍 그림을 누르면 크게 보입니다</div></div>';
+}
 function renderMap(){
   const m=document.getElementById("stepMap");
   m.innerHTML=STEPS.map((st,i)=>
@@ -490,6 +510,7 @@ function renderStep(){
   if(pn) h+='<span class="phase p'+st.phase+'">'+esc(pn)+"</span>";
   h+='<div class="steptitle"><span class="no">'+esc(st.no)+"</span> "+esc(st.title)+"</div>";
   if(st.why) h+='<p class="why'+(st.star?" star":"")+'">'+esc(fill(st.why))+"</p>";
+  h+=figHTML(st.fig);
   if(st.noai) h+='<div class="noai">🙅 이 스텝에서는 AI를 쓰지 않습니다. 내 머리와 내 손으로 합니다.</div>';
   if(st.panel && (st.panel.lines||[]).length){
     h+='<div class="panel">'+(st.panel.title?"<h4>"+esc(fill(st.panel.title))+"</h4>":"")
@@ -744,14 +765,14 @@ function showLib(){
 }
 function renderLib(){
   const basics=LIB.filter(m=>m.basic).sort((a,b)=>a.basic-b.basic);
-  const tracks=[["0","1단계 · 시작 전 약속 (10~15분)"],["R","2단계 · AI 고르기와 프롬프트 기본기 (1차시)"],["A","A트랙 · 문서와 글쓰기"],["B","B트랙 · 발표"],["C","C트랙 · 만들기"],["D","D트랙 · 조사와 자료"],["P","4단계 · 각자 주제로 (마무리)"]];
+  const tracks=[["0","1단계 · 시작 전 약속 (10~15분)"],["R","2단계 · AI 고르기와 프롬프트 기본기 (1차시)"],["A","3단계 · A트랙 — 문서와 글쓰기"],["B","3단계 · B트랙 — 발표"],["C","3단계 · C트랙 — 만들기"],["D","3단계 · D트랙 — 조사와 자료"],["P","4단계 · 각자 주제로 (마무리)"]];
   let h='<div class="card"><h2 class="sec">어떤 모듈을 할까요?</h2>'
       +'<p class="muted">이 파일 하나에 모든 모듈이 들어 있습니다. 고른 모듈부터 시작하면 되고, '
       +'하던 것이 있으면 이어서 진행됩니다.</p></div>';
   const used=[];
   if(basics.length){
     basics.forEach(m=>used.push(m));
-    h+='<div class="trackhd">기본 · 먼저 하는 '+basics.length+'가지</div><div class="libgrid">'+basics.map(cardHTML).join("")+"</div>";
+    h+='<div class="trackhd">3단계 기본 · 먼저 하는 '+basics.length+'가지</div><div class="libgrid">'+basics.map(cardHTML).join("")+"</div>";
   }
   tracks.forEach(t=>{
     const g=LIB.filter(m=>String(m.code||"").startsWith(t[0])&&used.indexOf(m)<0);

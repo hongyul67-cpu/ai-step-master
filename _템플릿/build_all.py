@@ -420,15 +420,15 @@ def build_editor(tpl):
 # ---------------- 허브 ----------------
 TRACKS = [("0", "1단계 · 시작 전 약속 (10~15분)"),
           ("R", "2단계 · AI 고르기와 프롬프트 기본기 (1차시)"),
-          ("A", "A트랙 · 문서와 글쓰기"), ("B", "B트랙 · 발표"),
-          ("C", "C트랙 · 만들기"), ("D", "D트랙 · 조사와 자료"),
+          ("A", "3단계 · A트랙 — 문서와 글쓰기"), ("B", "3단계 · B트랙 — 발표"),
+          ("C", "3단계 · C트랙 — 만들기"), ("D", "3단계 · D트랙 — 조사와 자료"),
           ("P", "4단계 · 각자 주제로 (마무리)")]
 
 def build_index(mods):
     cards = ""
     basics = sorted([m for m in mods if m.get("basic")], key=lambda x: x["basic"])
     if basics:
-        cards += '\n    <h3 class="track">기본 · 먼저 하는 %d가지</h3>' % len(basics)
+        cards += '\n    <h3 class="track">3단계 기본 · 먼저 하는 %d가지</h3>' % len(basics)
         cards += _cards(basics)
     for letter, label in TRACKS:
         group = [m for m in mods if m["code"].startswith(letter) and not m.get("basic")]
